@@ -26,7 +26,7 @@ class IteratorElement
      */
     public ?string $type = null {
         get {
-            return ($this->type) ? strtolower($this->type) : null;
+            return ($this->type ?? null) ? strtolower($this->type) : null;
         }
         set(?string $value) {
             $this->type = strtolower($value);
@@ -74,7 +74,7 @@ class IteratorElement
                 empty($this->path)
                 && strtolower($this->type) === self::FIELD
             ),
-            new Exception("Definizione campo non valida")
+            new Exception("Definizione campo non valida, si prega di aggiungere un path")
         );
 
         if ($this->fields)

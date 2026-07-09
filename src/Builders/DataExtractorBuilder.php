@@ -9,6 +9,4 @@ abstract class DataExtractorBuilder
     ) {}
 
     function toXml() {}
-
-    function toArray() {}
 }

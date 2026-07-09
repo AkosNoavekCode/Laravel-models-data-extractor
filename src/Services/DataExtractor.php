@@ -10,7 +10,7 @@ class DataExtractor
 {
   protected mixed $target;
 
-  private bool $extracted;
+  private bool $extracted = false;
 
   protected ConcreteBuilder $builder;
 
@@ -46,8 +46,10 @@ class DataExtractor
     );
 
     $this->builder = new ConcreteBuilder($this->target, $filename, json_encode($data));
-    $this->factory = ModelSectionFieldsFactory::make($filename, $section);
+    $this->factory = ModelSectionFieldsFactory::make($this->builder->filename, $section);
     $this->extracted = true;
+
+    return $this->builder->extract($this->factory, $section);
   }
 
   function toJson(?string $filename = null, mixed $data = null, ?string $section = null)
@@ -58,5 +60,25 @@ class DataExtractor
 
     $this->factory->section_name = $section;
     return $this->builder->toJson($this->factory);
+  }
+
+  function toHtml(?string $filename = null, mixed $data = null, ?string $section = null)
+  {
+    if (! $this->extracted) {
+      $this->extract($filename, $data, $section);
+    }
+
+    $this->factory->section_name = $section;
+    return $this->builder->toHtml();
+  }
+
+  function toArray(?string $filename = null, mixed $data = null, ?string $section = null)
+  {
+    if (! $this->extracted) {
+      $this->extract($filename, $data, $section);
+    }
+
+    $this->factory->section_name = $section;
+    return $this->builder->toArray($this->factory);
   }
 }

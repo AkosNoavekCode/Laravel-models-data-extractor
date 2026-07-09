@@ -6,23 +6,23 @@ use AkosNoavek\DataExtractor\Factories\SectionFactory;
 use AkosNoavek\DataExtractor\Iterators\BuilderIterator;
 use AkosNoavek\DataExtractor\Iterators\IteratorElement;
 
-trait BuilderToJson
+trait BuilderToArray
 {
-    function toJson(SectionFactory $factory, ?string $sezione = null)
+    function toArray(SectionFactory $factory, ?string $sezione = null)
     {
         $iterator = new BuilderIterator(target: $this->target, factory: $factory, separator: "<br>");
         if ($sezione) {
-            return json_encode($this->sanitizeExtractedValues($iterator->get()));
+            return $this->sanitizeExtracted($iterator->get());
         } else {
-            return json_encode($this->sanitizeExtractedValues($iterator->get()));
+            return $this->sanitizeExtracted($iterator->get());
         }
     }
 
-    function sanitizeExtractedValues(IteratorElement $data): array
+    function sanitizeExtracted(IteratorElement $data): array
     {
         $res = [];
         if ($data->type === IteratorElement::SECTION) {
-            $res[] = $this->parseSection($data);
+            $res[] = $this->parseArraySection($data);
         } else {
             $res = [
                 "label" => $data->label,
@@ -37,7 +37,7 @@ trait BuilderToJson
         return $res;
     }
 
-    function parseSection(IteratorElement $data)
+    function parseArraySection(IteratorElement $data)
     {
         $section = [
             "label" => $data->label,
@@ -58,7 +58,7 @@ trait BuilderToJson
                     "parent_key" => $field->parent_key,
                 ];
             else
-                $section['data'][] = $this->parseSection($field);
+                $section['data'][] = $this->parseArraySection($field);
         }
         return $section;
     }

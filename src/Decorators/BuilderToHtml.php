@@ -14,7 +14,16 @@ trait BuilderToHtml
             $data = json_decode($this->toJson(sezione: $sezione, factory: $factory), true);
             return $this->arrayToHtml($data);
         } else {
-            //todo
+            $factory = ModelSectionFieldsFactory::make($this->filename);
+            $data = json_decode($this->toJson(factory: $factory), true);
+            /**
+             * If is not a section
+             */
+            if (!empty(safe_value($data, 'value'))) {
+                return $this->itemToHtml($data, false);
+            } else {
+                return $this->arrayToHtml($data);
+            }
         }
     }
 
@@ -55,7 +64,7 @@ trait BuilderToHtml
     function itemToHtml(array $value, bool $check_nested = false)
     {
         if (!empty(safe_value($value, 'data')) && $check_nested)
-            $this->arrayToHtml([$value]);
+            return $this->arrayToHtml([$value]);
 
 
         if (safe_value($value, 'view')) {
@@ -74,7 +83,6 @@ trait BuilderToHtml
                 empty(safe_value($value, 'value'))
                 && ! safe_value($value, 'evaluate_when_empty')
             )
-            || empty($value['parent_key'])
         )
             return;
 

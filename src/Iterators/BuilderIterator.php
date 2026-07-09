@@ -47,6 +47,10 @@ class BuilderIterator implements BuilderIteratorInterface
     {
         $val = null;
 
+        if (is_array($target)) {
+            return safe_value($target, implode(".", $parts));
+        }
+
         foreach ($parts as $i => $part) {
             if ($i == 0)
                 $val = $target?->{$part};
@@ -72,7 +76,7 @@ class BuilderIterator implements BuilderIteratorInterface
         if (strtolower($el->type) === IteratorElement::SECTION) {
             $this->parseSection($el);
         } else {
-            $this->getValueFromPath($el);
+            $el->data = $this->getValueFromPath($el);
         }
 
         return $el;
@@ -124,6 +128,8 @@ class BuilderIterator implements BuilderIteratorInterface
                     } else {
                         $this->clearFromEmptyFields($value);
                     }
+                } else {
+                    $this->parseSection($value);
                 }
 
                 if (! $value->evaluate_when_empty) {
