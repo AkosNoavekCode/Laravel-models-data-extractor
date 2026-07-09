@@ -84,7 +84,7 @@ class BuilderIterator implements BuilderIteratorInterface
 
     function parseSection(IteratorElement &$section)
     {
-        $sections_to_push = [];
+        $replacements = [];
         $section->fields = array_values($section->fields);
 
         foreach ($section->fields as $section_index => &$value) {
@@ -94,7 +94,7 @@ class BuilderIterator implements BuilderIteratorInterface
                 if (!empty($value->root)) {
                     $root_elements = $this->getValueFromPath($value, $value->root);
                     $reflection = null;
-                    if ($root_elements) {
+                    if (is_object($root_elements)) {
                         $reflection = new ReflectionClass($root_elements);
                     }
 
@@ -111,20 +111,17 @@ class BuilderIterator implements BuilderIteratorInterface
                         $this->parseSection($value);
                         $this->current_target = $this->target;
                     } else if (!empty($root_elements)) {
-                        $pushable_index = 1;
-                        foreach ($root_elements as $i => $target_element_model) {
+                        $clones = [];
+                        foreach ($root_elements as $target_element_model) {
                             $this->current_target = $target_element_model;
-                            $this->parseSection($value);
-                            if ($i !== count($root_elements) - 1) {
-                                $sections_to_push[] = [
-                                    'pushable' =>  new IteratorElement(json_decode(json_encode($value), true)),
-                                    'target' => $this->getParent($value) ?? $value,
-                                    'index' => $section_index + $pushable_index
-                                ];
-                                $pushable_index++;
+                            $clone = new IteratorElement(json_decode(json_encode($value), true));
+                            $this->parseSection($clone);
+                            if ($this->sectionShouldDisplay($clone)) {
+                                $clones[] = $clone;
                             }
                         }
                         $this->current_target = $this->target;
+                        $replacements[$section_index] = $clones;
                     } else {
                         $this->clearFromEmptyFields($value);
                     }
@@ -132,16 +129,8 @@ class BuilderIterator implements BuilderIteratorInterface
                     $this->parseSection($value);
                 }
 
-                if (! $value->evaluate_when_empty) {
-                    $should_display = false;
-                    foreach ($value->fields as $field) {
-                        if (!empty($field->data)) {
-                            $should_display = true;
-                            break;
-                        }
-                    }
-
-                    if (!$should_display) {
+                if (! $value->evaluate_when_empty && !isset($replacements[$section_index])) {
+                    if (!$this->sectionShouldDisplay($value)) {
                         unset($section->fields[$section_index]);
                     }
                 }
@@ -154,18 +143,20 @@ class BuilderIterator implements BuilderIteratorInterface
             }
         }
 
-        foreach ($sections_to_push as $pushable) {
-            $this->walk($pushable['target'], $pushable['index'], $pushable['pushable']);
+        foreach (array_reverse($replacements, true) as $index => $clones) {
+            array_splice($section->fields, $index, 1, $clones);
         }
+        $section->fields = array_values($section->fields);
     }
 
-    function getParent(IteratorElement $element): ?IteratorElement
+    function sectionShouldDisplay(IteratorElement $section): bool
     {
-        if (empty($element->parent_key)) {
-            return null;
-        } else {
-            return collect($this->parsedSections)->where('element_key', $element->parent_key)->first();
+        foreach ($section->fields as $field) {
+            if (!empty($field->data)) {
+                return true;
+            }
         }
+        return false;
     }
 
     function clearFromEmptyFields(IteratorElement &$target)
@@ -184,24 +175,6 @@ class BuilderIterator implements BuilderIteratorInterface
                 && empty($value->value)
             )
                 unset($target);
-        }
-    }
-
-    function walk(&$section, $index, $pushable)
-    {
-        if (!isset($section->fields[$index]))
-            $section->fields[$index] = $pushable;
-
-        $original = $section->fields[$index];
-        if ($original) {
-            $section->fields[$index] = $pushable;
-
-            $nested_original = $section->fields[$index + 1] ?? null;
-
-            if ($nested_original) {
-                $this->walk($section, ($index + 1), $nested_original);
-            }
-            $section->fields[$index + 1] = $original;
         }
     }
 
