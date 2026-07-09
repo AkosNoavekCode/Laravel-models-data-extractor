@@ -3,12 +3,16 @@
 	"description": "Extract your models data based on a given json schema to the formats you prefer",
 	"type": "library",
 	"require": {
-		"laravel/laravel": "12"
+		"laravel/laravel": "12",
+		"php": "^8.2"
 	},
 	"autoload": {
 		"psr-4": {
-			"AkosNoavek\\DataExtractor": "src/"
-		}
+			"AkosNoavek\\DataExtractor\\": "src/"
+		},
+		"files": [
+			"src/helpers.php"
+		]
 	},
 	"authors": [
 		{
@@ -16,5 +20,26 @@
 			"email": "g.mannai@invisiblefarm.com"
 		}
 	],
-	"minimum-stability": "dev"
+	"laravel": {
+		"providers": [
+			"Akosnoavek\\DataExtractor\\Support\\ServiceProvider"
+		],
+		"aliases": {
+			"DataExtractor": "Akosnoavek\\DataExtractor\\Facades\\DataExtractor"
+		}
+	},
+	"minimum-stability": "dev",
+	"require-dev": {
+		"pestphp/pest": "4.x-dev"
+	},
+	"scripts-aliases": {
+		"test": [
+			"./vendor/bin/pest"
+		]
+	},
+	"config": {
+		"allow-plugins": {
+			"pestphp/pest-plugin": true
+		}
+	}
 }
