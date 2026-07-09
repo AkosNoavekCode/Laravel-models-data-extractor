@@ -8,11 +8,10 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"AkosNoavek\\DataExtractor\\": "src/"
+			"AkosNoavek\\DataExtractor\\": "src/",
+			"tests\\": "tests/"
 		},
-		"files": [
-			"src/helpers.php"
-		]
+		"files": ["src/helpers.php"]
 	},
 	"authors": [
 		{
@@ -21,21 +20,18 @@
 		}
 	],
 	"laravel": {
-		"providers": [
-			"Akosnoavek\\DataExtractor\\Support\\ServiceProvider"
-		],
+		"providers": ["Akosnoavek\\DataExtractor\\Support\\ServiceProvider"],
 		"aliases": {
 			"DataExtractor": "Akosnoavek\\DataExtractor\\Facades\\DataExtractor"
 		}
 	},
 	"minimum-stability": "dev",
 	"require-dev": {
-		"pestphp/pest": "4.x-dev"
+		"pestphp/pest": "4.x-dev",
+		"orchestra/testbench": "10.x-dev"
 	},
 	"scripts-aliases": {
-		"test": [
-			"./vendor/bin/pest"
-		]
+		"test": ["./vendor/bin/pest"]
 	},
 	"config": {
 		"allow-plugins": {

@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Foundation\Testing\TestCase;
+use tests\TestCase;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,4 +14,4 @@ use Illuminate\Foundation\Testing\TestCase;
 */
 
 pest()->extend(TestCase::class)
-    ->in('Feature');
+    ->in('Unit');

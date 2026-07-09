@@ -2,7 +2,7 @@
 
 namespace AkosNoavek\DataExtractor\Support;
 
-use AkosNoavek\DataExtractor\Facades\DataExtractor;
+use AkosNoavek\DataExtractor\Services\DataExtractor;
 use \Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
 class ServiceProvider extends BaseServiceProvider
