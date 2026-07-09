@@ -1,8 +1,13 @@
 <?php
 
 use AkosNoavek\DataExtractor\Facades\DataExtractor;
+use Illuminate\Database\Eloquent\Model;
 
 test('that true is true', function () {
-    dd(DataExtractor::test());
+
+    $model = new class extends Model {};
+    $concrete = new $model();
+    $concrete->field = "value";
+
     expect(true)->toBe(true);
 });

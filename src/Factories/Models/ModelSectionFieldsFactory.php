@@ -8,7 +8,7 @@ use Override;
 
 class ModelSectionFieldsFactory implements SectionFactory
 {
-    private function __construct(protected readonly string $file_path, protected ?string $section_name = null) {}
+    private function __construct(protected readonly string $file_path, public ?string $section_name = null) {}
 
     public static function make(string $file_path, ?string $section_name = null): static
     {
