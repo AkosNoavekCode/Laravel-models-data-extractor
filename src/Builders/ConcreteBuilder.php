@@ -2,7 +2,7 @@
 
 namespace AkosNoavek\DataExtractor\Builders;
 
-use AkosNoavek\DataExtractor\Decorators\BuilderToArray;
+use AkosNoavek\DataExtractor\Decorators\BuilderToCsv;
 use AkosNoavek\DataExtractor\Decorators\BuilderToHtml;
 use AkosNoavek\DataExtractor\Decorators\BuilderToJson;
 use AkosNoavek\DataExtractor\Factories\SectionFactory;
@@ -12,7 +12,10 @@ use Illuminate\Support\Str;
 
 class ConcreteBuilder extends DataExtractorBuilder
 {
-    use BuilderToHtml, BuilderToJson, BuilderToArray;
+    use
+        BuilderToHtml,
+        BuilderToJson,
+        BuilderToCsv;
 
     public array $sezioni;
     public array $pushed_sections = [];

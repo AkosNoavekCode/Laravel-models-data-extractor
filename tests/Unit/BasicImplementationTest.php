@@ -5,6 +5,35 @@ use AkosNoavek\DataExtractor\Iterators\IteratorElement;
 use Illuminate\Database\Eloquent\Model;
 
 describe('Model implementation is working', function () {
+    test('CSV method is working as expected', function () {
+        $model = new class extends Model {};
+        $concrete = new $model();
+        $concrete->field = "value test";
+
+
+        /**
+         * @var object $el
+         */
+        $el = DataExtractor::make($concrete)
+            ->toCsv(data: [
+                "type" => "section",
+                "label" => "section label",
+                "fields" => [
+                    "field_one" => ["path" => "field_one", "label" => $label_one = "label one"],
+                    "field_two" => ["path" => "field_two", "label" => $label_two = "label two"],
+                    "field_three" => ["path" => "field_two", "label" => $label_two = "label two"],
+                    "field_four" => [
+                        "type" => "section",
+                        "label" => "section label",
+                        "fields" => [
+                            "field_three" => ["path" => "field_two", "label" => $label_two = "label three"],
+                            "field_four" => ["path" => "field_two", "label" => $label_two = "label two"],
+                        ]
+                    ],
+                ],
+            ]);
+    });
+
     test('HTML method is working as expected', function () {
         $model = new class extends Model {};
         $concrete = new $model();

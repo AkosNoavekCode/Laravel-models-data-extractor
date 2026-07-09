@@ -16,11 +16,6 @@ class DataExtractor
 
   protected ModelSectionFieldsFactory $factory;
 
-  public function test()
-  {
-    return "Works";
-  }
-
   /**
    * @param mixed $target
    */
@@ -50,6 +45,16 @@ class DataExtractor
     $this->extracted = true;
 
     return $this->builder->extract($this->factory, $section);
+  }
+
+  function toCsv(?string $filename = null, mixed $data = null, ?string $section = null)
+  {
+    if (! $this->extracted) {
+      $this->extract($filename, $data, $section);
+    }
+
+    $this->factory->section_name = $section;
+    return $this->builder->toCsv($this->factory);
   }
 
   function toJson(?string $filename = null, mixed $data = null, ?string $section = null)

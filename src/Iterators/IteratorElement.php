@@ -9,6 +9,8 @@ class IteratorElement
 {
     public string $label = "";
 
+    public ?string $csv_ref = null;
+
     public ?string $view = null;
 
     public string $element_key;
