@@ -1,15 +1,20 @@
 {
-    "name": "akosnoavek/models-data-extractor",
-    "description": "Extract your models data based on a given json schema to the formats you prefer",
-    "type": "library",
-    "require": {
-        "laravel/laravel": "12"
-    },
-    "authors": [
-        {
-            "name": "g.mannai",
-            "email": "g.mannai@invisiblefarm.com"
-        }
-    ],
-    "minimum-stability": "dev"
+	"name": "akosnoavek/models-data-extractor",
+	"description": "Extract your models data based on a given json schema to the formats you prefer",
+	"type": "library",
+	"require": {
+		"laravel/laravel": "12"
+	},
+	"autoload": {
+		"psr-4": {
+			"AkosNoavek\\DataExtractor": "src/"
+		}
+	},
+	"authors": [
+		{
+			"name": "g.mannai",
+			"email": "g.mannai@invisiblefarm.com"
+		}
+	],
+	"minimum-stability": "dev"
 }
