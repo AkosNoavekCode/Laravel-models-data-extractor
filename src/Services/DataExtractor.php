@@ -43,7 +43,7 @@ class DataExtractor
       new Exception("Please provide a schema.")
     );
 
-    $this->builder = new ConcreteBuilder($this->target, $filename, json_encode($data));
+    $this->builder = new ConcreteBuilder($this->target, $filename, ($data) ? json_encode($data) : null);
     $this->factory = ModelSectionFieldsFactory::make($this->builder->filename, $section);
     $this->extracted = true;
 
