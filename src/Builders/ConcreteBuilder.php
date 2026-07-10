@@ -2,7 +2,9 @@
 
 namespace AkosNoavek\DataExtractor\Builders;
 
+use AkosNoavek\DataExtractor\Decorators\BuilderToArray;
 use AkosNoavek\DataExtractor\Decorators\BuilderToCsv;
+use AkosNoavek\DataExtractor\Decorators\BuilderToExcel;
 use AkosNoavek\DataExtractor\Decorators\BuilderToHtml;
 use AkosNoavek\DataExtractor\Decorators\BuilderToJson;
 use AkosNoavek\DataExtractor\Factories\SectionFactory;
@@ -13,12 +15,15 @@ use Illuminate\Support\Str;
 class ConcreteBuilder extends DataExtractorBuilder
 {
     use
+        BuilderToArray,
         BuilderToHtml,
         BuilderToJson,
+        BuilderToExcel,
         BuilderToCsv;
 
     public array $sezioni;
     public array $pushed_sections = [];
+    public bool $should_delete_template = false;
 
     public function __construct(
         protected mixed $target,
@@ -27,6 +32,7 @@ class ConcreteBuilder extends DataExtractorBuilder
     ) {
         if (!empty($content)) {
             $rand = Str::random(12);
+            $this->should_delete_template = true;
             $this->filename = "/tmp/$rand.json";
             file_put_contents($this->filename, $content);
         } elseif (empty($content) && empty($this->filename)) {

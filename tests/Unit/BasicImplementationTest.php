@@ -12,13 +12,14 @@ describe('Model implementation is working', function () {
 
 
         /**
-         * @var object $el
+         * @var string $file_path
          */
-        $el = DataExtractor::make($concrete)
+        $file_path = DataExtractor::make($concrete)
             ->toCsv(data: [
                 "type" => "section",
                 "label" => "section label",
                 "fields" => [
+                    "field_one_evaluated" => ["path" => "field", "label" => $label_one = "label one"],
                     "field_one" => ["path" => "field_one", "label" => $label_one = "label one"],
                     "field_two" => ["path" => "field_two", "label" => $label_two = "label two"],
                     "field_three" => ["path" => "field_two", "label" => $label_two = "label two"],
@@ -32,6 +33,9 @@ describe('Model implementation is working', function () {
                     ],
                 ],
             ]);
+
+        $content = file_get_contents($file_path);
+        expect($content)->toContain($concrete->field);
     });
 
     test('HTML method is working as expected', function () {
@@ -109,6 +113,39 @@ describe('Model implementation is working', function () {
 });
 
 describe('Array implementation is working', function () {
+    test('CSV method is working as expected', function () {
+        $concrete = [
+            "field" => "value test",
+            "label" => "label test"
+        ];
+
+        /**
+         * @var string $file_path
+         */
+        $file_path = DataExtractor::make($concrete)
+            ->toCsv(data: [
+                "type" => "section",
+                "label" => "section label",
+                "fields" => [
+                    "field_one_evaluated" => ["path" => "field", "label" => $label_one = "label one"],
+                    "field_one" => ["path" => "field_one", "label" => $label_one = "label one"],
+                    "field_two" => ["path" => "field_two", "label" => $label_two = "label two"],
+                    "field_three" => ["path" => "field_two", "label" => $label_two = "label two"],
+                    "field_four" => [
+                        "type" => "section",
+                        "label" => "section label",
+                        "fields" => [
+                            "field_three" => ["path" => "field_two", "label" => $label_two = "label three"],
+                            "field_four" => ["path" => "field_two", "label" => $label_two = "label two"],
+                        ]
+                    ],
+                ],
+            ]);
+
+        $content = file_get_contents($file_path);
+        expect($content)->toContain($concrete['field']);
+    });
+
     test('HTML method is working as expected', function () {
         $concrete = [
             "field" => "value test"
@@ -178,6 +215,39 @@ describe('Array implementation is working', function () {
 });
 
 describe('Object implementation is working', function () {
+    test('CSV method is working as expected', function () {
+        $concrete = json_decode(json_encode([
+            "field" => "value test",
+            "label" => "label test"
+        ]));
+
+        /**
+         * @var string $file_path
+         */
+        $file_path = DataExtractor::make($concrete)
+            ->toCsv(data: [
+                "type" => "section",
+                "label" => "section label",
+                "fields" => [
+                    "field_one_evaluated" => ["path" => "field", "label" => $label_one = "label one"],
+                    "field_one" => ["path" => "field_one", "label" => $label_one = "label one"],
+                    "field_two" => ["path" => "field_two", "label" => $label_two = "label two"],
+                    "field_three" => ["path" => "field_two", "label" => $label_two = "label two"],
+                    "field_four" => [
+                        "type" => "section",
+                        "label" => "section label",
+                        "fields" => [
+                            "field_three" => ["path" => "field_two", "label" => $label_two = "label three"],
+                            "field_four" => ["path" => "field_two", "label" => $label_two = "label two"],
+                        ]
+                    ],
+                ],
+            ]);
+
+        $content = file_get_contents($file_path);
+        expect($content)->toContain($concrete->field);
+    });
+
     test('HTML method is working as expected', function () {
         $concrete = json_decode(json_encode([
             "field" => "value test"

@@ -98,6 +98,62 @@ describe('Root element pointing to a single related model', function () {
         expect($manager_section->root)->toBe('manager');
         expect($manager_section->fields[0]->data)->toBe($manager->name);
     });
+
+    test('CSV method is working as expected', function () {
+        $manager = new class extends Model {};
+        $manager->name = "Mario Rossi";
+
+        $employee = new class extends Model {};
+        $employee->setRelation('manager', $manager);
+
+        $file_path = DataExtractor::make($employee)
+            ->toCsv(data: [
+                "type" => "section",
+                "label" => "outer",
+                "fields" => [
+                    "manager_section" => [
+                        "type" => "section",
+                        "label" => "manager section",
+                        "root" => "manager",
+                        "fields" => [
+                            "manager_name" => ["path" => "name", "label" => "Manager name"],
+                        ],
+                    ],
+                ],
+            ]);
+
+        $content = file_get_contents($file_path);
+        expect($content)->toContain('Manager name');
+        expect($content)->toContain($manager->name);
+    });
+
+    test('Excel method is working as expected', function () {
+        $manager = new class extends Model {};
+        $manager->name = "Mario Rossi";
+
+        $employee = new class extends Model {};
+        $employee->setRelation('manager', $manager);
+
+        $file_path = DataExtractor::make($employee)
+            ->toXlsx(data: [
+                "type" => "section",
+                "label" => "outer",
+                "fields" => [
+                    "manager_section" => [
+                        "type" => "section",
+                        "label" => "manager section",
+                        "root" => "manager",
+                        "fields" => [
+                            "manager_name" => ["path" => "name", "label" => "Manager name"],
+                        ],
+                    ],
+                ],
+            ]);
+
+        [$header, $row] = readXlsxSheet($file_path);
+        expect($header)->toBe(['Manager name']);
+        expect($row)->toBe([$manager->name]);
+    });
 });
 
 describe('Root element pointing to a collection (one-to-many)', function () {
@@ -150,6 +206,25 @@ describe('Root element pointing to a collection (one-to-many)', function () {
         expect($el->fields[0]->root)->toBe('children');
         expect($el->fields[0]->fields[0]->data)->toBe('Child One');
         expect($el->fields[1]->fields[0]->data)->toBe('Child Two');
+
+        // ogni clone condivide la stessa label di partenza ("Child name");
+        // il CSV deve produrre una singola colonna con i valori di tutti i
+        // cloni uniti da "; ", altrimenti i valori si sovrascriverebbero a
+        // vicenda sulla stessa chiave.
+        $file_path = DataExtractor::make($parent)->toCsv(data: $schema);
+        $csv = array_map('str_getcsv', file($file_path));
+        [$header, $row] = $csv;
+
+        expect($header)->toContain('Child name');
+        expect($row[array_search('Child name', $header)])->toBe('Child One; Child Two');
+
+        // stessa aspettativa per l'export Excel: una sola colonna "Child name"
+        // con i valori dei due cloni uniti da "; ".
+        $xlsx_path = DataExtractor::make($parent)->toXlsx(data: $schema);
+        [$xlsx_header, $xlsx_row] = readXlsxSheet($xlsx_path);
+
+        expect($xlsx_header)->toBe(['Child name']);
+        expect($xlsx_row)->toBe(['Child One; Child Two']);
     });
 
     test('Array target: repeats the section once per related record, in order', function () {
@@ -247,5 +322,14 @@ describe('Root elements combined with nested sections', function () {
         expect($arr[0]['data'])->toHaveCount(3);
         expect($arr[0]['data'][1]['data'][0]['value'])->toBe('Child One');
         expect($arr[0]['data'][2]['data'][0]['value'])->toBe('Child Two');
+
+        // il campo "field_one" della section esterna deve mantenere la propria
+        // colonna anche quando e' seguito da una section con root a piu' elementi:
+        // in caso contrario le colonne si sovrascriverebbero a vicenda.
+        $xlsx_path = DataExtractor::make($parent)->toXlsx(data: $schema);
+        [$xlsx_header, $xlsx_row] = readXlsxSheet($xlsx_path);
+
+        expect($xlsx_header)->toBe(['label one', 'Child name']);
+        expect($xlsx_row)->toBe(['value one', 'Child One; Child Two']);
     });
 });

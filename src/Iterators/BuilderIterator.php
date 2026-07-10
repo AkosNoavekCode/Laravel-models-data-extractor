@@ -53,7 +53,7 @@ class BuilderIterator implements BuilderIteratorInterface
 
         foreach ($parts as $i => $part) {
             if ($i == 0)
-                $val = $target?->{$part};
+                $val = $target?->{$part} ?? null;
             elseif ($i != 0 && $val == null)
                 break;
             else
@@ -66,6 +66,17 @@ class BuilderIterator implements BuilderIteratorInterface
     function getParts(): IteratorElement
     {
         return $this->factory->getSectionFields();
+    }
+
+    function getFromBuilt(IteratorElement $el)
+    {
+        if (strtolower($el->type) === IteratorElement::SECTION) {
+            $this->parseSection($el);
+        } else {
+            $el->data = $this->getValueFromPath($el);
+        }
+
+        return $el;
     }
 
 

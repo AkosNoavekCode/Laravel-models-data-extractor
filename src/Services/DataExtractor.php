@@ -29,10 +29,13 @@ class DataExtractor
 
     $this->target = $target;
 
-    return $this;
+    $s = new self();
+    $s->target = $this->target;
+
+    return $s;
   }
 
-  function extract(?string $filename = null, mixed $data = null, ?string $section = null)
+  function extract(?string $filename = null, mixed $data = null, ?string $section = null, bool $should_delete_template = true)
   {
     throw_if(
       empty($filename)
@@ -44,46 +47,74 @@ class DataExtractor
     $this->factory = ModelSectionFieldsFactory::make($this->builder->filename, $section);
     $this->extracted = true;
 
-    return $this->builder->extract($this->factory, $section);
+    $data = $this->builder->extract($this->factory, $section);
+    if ($this->builder->should_delete_template && $should_delete_template)
+      unlink($this->builder->filename);
+    return $data;
   }
 
   function toCsv(?string $filename = null, mixed $data = null, ?string $section = null)
   {
     if (! $this->extracted) {
-      $this->extract($filename, $data, $section);
+      $this->extract($filename, $data, $section, false);
     }
 
     $this->factory->section_name = $section;
-    return $this->builder->toCsv($this->factory);
+    $data = $this->builder->toCsv($this->factory, $section);
+    if ($this->builder->should_delete_template)
+      unlink($this->builder->filename);
+    return $data;
   }
 
   function toJson(?string $filename = null, mixed $data = null, ?string $section = null)
   {
     if (! $this->extracted) {
-      $this->extract($filename, $data, $section);
+      $this->extract($filename, $data, $section, false);
     }
 
     $this->factory->section_name = $section;
-    return $this->builder->toJson($this->factory);
+    $data = $this->builder->toJson($this->factory, $section);
+    if ($this->builder->should_delete_template)
+      unlink($this->builder->filename);
+    return $data;
   }
 
   function toHtml(?string $filename = null, mixed $data = null, ?string $section = null)
   {
     if (! $this->extracted) {
-      $this->extract($filename, $data, $section);
+      $this->extract($filename, $data, $section, false);
     }
 
     $this->factory->section_name = $section;
-    return $this->builder->toHtml();
+    $data = $this->builder->toHtml();
+    if ($this->builder->should_delete_template)
+      unlink($this->builder->filename);
+    return $data;
+  }
+
+  function toXlsx(?string $filename = null, mixed $data = null, ?string $section = null)
+  {
+    if (! $this->extracted) {
+      $this->extract($filename, $data, $section, false);
+    }
+
+    $this->factory->section_name = $section;
+    $data = $this->builder->toExcel($this->factory);
+    if ($this->builder->should_delete_template)
+      unlink($this->builder->filename);
+    return $data;
   }
 
   function toArray(?string $filename = null, mixed $data = null, ?string $section = null)
   {
     if (! $this->extracted) {
-      $this->extract($filename, $data, $section);
+      $this->extract($filename, $data, $section, false);
     }
 
     $this->factory->section_name = $section;
-    return $this->builder->toArray($this->factory);
+    $data = $this->builder->toArray($this->factory);
+    if ($this->builder->should_delete_template)
+      unlink($this->builder->filename);
+    return $data;
   }
 }

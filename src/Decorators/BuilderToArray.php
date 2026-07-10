@@ -31,6 +31,7 @@ trait BuilderToArray
                 "element_key" => $data->element_key,
                 "parent_key" => $data->parent_key,
                 "extra_attributes" => $data->extra_attributes,
+                "csv_ref" => $data->csv_ref
             ];
         }
 
@@ -56,6 +57,7 @@ trait BuilderToArray
                     "extra_attributes" => $field->extra_attributes,
                     "element_key" => $field->element_key,
                     "parent_key" => $field->parent_key,
+                    "csv_ref" => $field->csv_ref
                 ];
             else
                 $section['data'][] = $this->parseArraySection($field);

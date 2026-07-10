@@ -4,7 +4,8 @@
 	"type": "library",
 	"require": {
 		"laravel/laravel": "12",
-		"php": "^8.2"
+		"php": "^8.2",
+		"phpoffice/phpspreadsheet": "dev-master"
 	},
 	"autoload": {
 		"psr-4": {
