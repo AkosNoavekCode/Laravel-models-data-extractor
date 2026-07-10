@@ -23,7 +23,7 @@ trait BuilderToCsv
         $labels = $this->getFields($built);
 
         $f = fopen($file_path = "/tmp/" . Str::random(6) . ".csv", 'wr');
-        fputcsv($f, $labels);
+        fputcsv($f, $labels, ",");
 
         $res = $this->toCsvArray($built);
 
@@ -38,7 +38,7 @@ trait BuilderToCsv
         }
 
         foreach ($data as $value) {
-            fputcsv($f, $value);
+            fputcsv($f, $value, ",");
         }
         fclose($f);
 
