@@ -113,8 +113,11 @@ class BuilderIterator implements BuilderIteratorInterface
                         $reflection
                         &&
                         (
-                            in_array($reflection->getParentClass()->name, config('data_extractor.model_classes'))
-                            || $reflection->getParentClass()->name === Model::class
+                            $reflection->getParentClass()
+                            && (
+                                in_array($reflection->getParentClass()->name, config('data_extractor.model_classes'))
+                                || $reflection->getParentClass()->name === Model::class
+                            )
                         )
                     ) {
                         $this->current_target = $root_elements;
