@@ -24,7 +24,7 @@ class ServiceProvider extends BaseServiceProvider
    */
   public function register(): void
   {
-    $this->mergeConfigFrom(__DIR__ . '/../../Config/config.php', 'form-components');
+    $this->mergeConfigFrom(__DIR__ . '/../../Config/config.php', 'data_extractor');
 
     $this->app->bind('data_extractor', function () {
       return new DataExtractor;

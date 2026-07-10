@@ -113,9 +113,8 @@ class BuilderIterator implements BuilderIteratorInterface
                         $reflection
                         &&
                         (
-                            // todo: check this
-                            // $reflection->getParentClass()->name === SMIModel::class
-                            $reflection->getParentClass()->name === Model::class
+                            in_array($reflection->getParentClass()->name, config('data_extractor.model_classes'))
+                            || $reflection->getParentClass()->name === Model::class
                         )
                     ) {
                         $this->current_target = $root_elements;
@@ -263,7 +262,7 @@ class BuilderIterator implements BuilderIteratorInterface
 
                     if ($element->date) {
                         try {
-                            $v = (!empty($row_value)) ? Carbon::parse($row_value)->format("d/m/Y") : "";
+                            $v = (!empty($row_value)) ? Carbon::parse($row_value)->format(config('data_extractor.date_format')) : "";
                         } catch (Exception $e) {
                             $v = "";
                         }
@@ -285,10 +284,10 @@ class BuilderIterator implements BuilderIteratorInterface
 
             if ($element->date) {
                 try {
-                    $val = (!empty($val)) ? Carbon::parse($val)->format("d/m/Y") : "";
+                    $val = (!empty($val)) ? Carbon::parse($val)->format(config('data_extractor.date_format')) : "";
                 } catch (\Exception $e) {
                     try {
-                        $val = (!empty($val)) ? Carbon::createFromFormat('d/m/Y', $val)->format("d/m/Y") : "";
+                        $val = (!empty($val)) ? Carbon::createFromFormat('d/m/Y', $val)->format(config('data_extractor.date_format')) : "";
                     } catch (\Exception $e) {
                         $val = "";
                     }

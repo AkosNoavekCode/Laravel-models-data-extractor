@@ -10,6 +10,40 @@ composer require akosnoavek/models-data-extractor
 
 The package ships a Laravel service provider (`AkosNoavek\DataExtractor\Support\ServiceProvider`) and a `DataExtractor` facade, both auto-discoverable via the `laravel.providers` / `laravel.aliases` entries in `composer.json`.
 
+## Configuration
+
+Publish the config file to customize it:
+
+```bash
+php artisan vendor:publish --tag=config
+```
+
+This creates `config/data_extractor.php`:
+
+```php
+return [
+    // Custom base classes that should be treated as a single Eloquent model
+    // when resolved through a section's "root" (see below).
+    'model_classes' => [],
+
+    // Default format used to render fields declared with "date" => true.
+    'date_format' => 'd/m/Y',
+];
+```
+
+- **`model_classes`** — a `root` section decides whether it points at a *single* related model or a *collection* by inspecting the parent class of the resolved value: `Illuminate\Database\Eloquent\Model` is always recognized. If your application extends a shared intermediate base class (e.g. `App\Models\BaseModel extends Model`), list that class's FQCN here so a `root` resolving to one of its instances is treated as a single model instead of being (mis-)treated as a collection.
+
+  This matters because the failure mode is silent: an Eloquent model instance is not iterable and exposes no public properties, so if its base class isn't recognized, the `root` section's `foreach` produces zero clones and the **entire section silently disappears from the output** — no error is raised.
+
+  ```php
+  // config/data_extractor.php
+  return [
+      'model_classes' => [\App\Models\BaseModel::class],
+  ];
+  ```
+
+- **`date_format`** — the `date()`/`Carbon::format()` pattern applied to any field declared with `"date" => true` (default `d/m/Y`).
+
 ## Core concepts
 
 Every extraction involves two independent things:
@@ -85,6 +119,8 @@ A section can pull its target from a relation or nested collection on the *paren
 
 - If `root` resolves to a **single related model** (or a plain array/object), the section's fields are simply resolved against that related record.
 - If `root` resolves to a **collection** (e.g. a `hasMany` relation, or an array of arrays), the section is **cloned once per item**, in order, and each clone's fields are resolved against that item. This means a schema with a single `root` section template can expand into N sections/rows in the output.
+
+A resolved Eloquent model is only recognized as a "single related model" if its base class is `Illuminate\Database\Eloquent\Model` or is registered via [`data_extractor.model_classes`](#configuration) — otherwise it is (mis-)treated as an empty collection and the whole section silently disappears from the output. If your models extend a shared base class, make sure to register it.
 
 ```php
 $parent->setRelation('children', new Collection([$child_one, $child_two]));
