@@ -2,6 +2,7 @@
 	"name": "akosnoavek/models-data-extractor",
 	"description": "Extract your models data based on a given json schema to the formats you prefer",
 	"type": "library",
+	"license": "MIT",
 	"require": {
 		"laravel/laravel": "12",
 		"php": "^8.2",
@@ -12,7 +13,9 @@
 			"AkosNoavek\\DataExtractor\\": "src/",
 			"tests\\": "tests/"
 		},
-		"files": ["src/helpers.php"]
+		"files": [
+			"src/helpers.php"
+		]
 	},
 	"authors": [
 		{
@@ -21,7 +24,9 @@
 		}
 	],
 	"laravel": {
-		"providers": ["Akosnoavek\\DataExtractor\\Support\\ServiceProvider"],
+		"providers": [
+			"Akosnoavek\\DataExtractor\\Support\\ServiceProvider"
+		],
 		"aliases": {
 			"DataExtractor": "Akosnoavek\\DataExtractor\\Facades\\DataExtractor"
 		}
@@ -32,7 +37,9 @@
 		"orchestra/testbench": "10.x-dev"
 	},
 	"scripts-aliases": {
-		"test": ["./vendor/bin/pest"]
+		"test": [
+			"./vendor/bin/pest"
+		]
 	},
 	"config": {
 		"allow-plugins": {
