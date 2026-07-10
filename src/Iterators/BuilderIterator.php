@@ -230,7 +230,7 @@ class BuilderIterator implements BuilderIteratorInterface
                                     });
                                 }
                                 // $models[$index] = array_merge($models[$index], getPartValue(explode('.', $path), $model));
-                            } else {
+                            } elseif ($model) {
                                 $records = $model->{$path};
 
                                 if (!empty($records)) {

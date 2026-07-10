@@ -28,10 +28,18 @@ trait BuilderToCsv
         $res = $this->toCsvArray($built);
 
         $data = [];
-        foreach ($labels as $key => $value) {
-            $data[$key] = $res[$value] ?? null;
+
+        foreach ($res as $res_value) {
+            $parsed = [];
+            foreach ($labels as $key => $value) {
+                $parsed[$key] = $res_value[$value] ?? null;
+            }
+            $data[] = $parsed;
         }
-        fputcsv($f, $data);
+
+        foreach ($data as $value) {
+            fputcsv($f, $value);
+        }
         fclose($f);
 
         return $file_path;
@@ -52,19 +60,25 @@ trait BuilderToCsv
 
     function parseCsvArraySection(IteratorElement $data, array &$res = []): array
     {
+        $csv_res = [];
+
         foreach ($data->fields as $field) {
-            if (!isset($res[$field->csv_ref])) {
-                $res[$field->csv_ref] = null;
+            if (!isset($csv_res[$field->csv_ref])) {
                 $separator = "";
             } else {
                 $separator = "; ";
             }
 
-            if ($field->type !== IteratorElement::SECTION)
-                $res[$field->csv_ref] .= ($separator . $field->data);
-            else
+            if ($field->type !== IteratorElement::SECTION) {
+                if (! empty($data->root)) {
+                    $csv_res[$field->csv_ref] = ($separator . $field->data);
+                }
+            } else
                 $this->parseCsvArraySection($field, $res);
         }
+
+        if ($csv_res)
+            $res[] = $csv_res;
 
         return $res;
     }
