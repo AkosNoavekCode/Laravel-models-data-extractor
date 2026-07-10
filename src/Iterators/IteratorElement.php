@@ -9,6 +9,8 @@ class IteratorElement
 {
     public string $label = "";
 
+    public int $data_index = 0;
+
     public ?string $csv_ref = null;
 
     public ?string $view = null;
@@ -16,6 +18,12 @@ class IteratorElement
     public string $element_key;
 
     public ?string $parent_key = null;
+
+    public ?IteratorElement $parent_reference = null;
+
+    public ?IteratorElement $next_sibling = null;
+
+    public ?IteratorElement $previous_sibling = null;
 
     public ?array $extra_attributes = null;
 
@@ -85,6 +93,8 @@ class IteratorElement
 
     protected function parseElements(array &$fields)
     {
+        $index = 0;
+        $previous = null;
         if (
             !empty($fields)
         ) {
@@ -96,9 +106,21 @@ class IteratorElement
                     $field['label'] = $key;
 
                 $field['parent_key'] = $this->element_key;
+
                 $el = new IteratorElement($field);
 
                 $field = $el;
+
+                if ($index === 0) {
+                    $previous = $field;
+                } elseif ($index > 0) {
+                    $previous->next_sibling = $field;
+                    $field->previous_sibling = $previous;
+                    $previous = $field;
+                } elseif ($index === count($fields) - 1) {
+                    $field->previous_sibling = $previous;
+                }
+                $index++;
             }
         }
     }

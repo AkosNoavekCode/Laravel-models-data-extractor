@@ -12,16 +12,9 @@ trait BuilderToCsv
 {
     function toCsv(SectionFactory $factory, ?string $sezione = null)
     {
-        /**
-         * @var IteratorElement $fields
-         */
-        $elements = $factory->getSectionFields();
-
         $iterator = new BuilderIterator(target: $this->target, factory: $factory, separator: "<br>");
 
-        $built = $iterator->getFromBuilt($elements);
-
-        $labels = $this->getFields($built);
+        $labels = $this->getFields($factory);
 
         $f = fopen($file_path = "/tmp/" . Str::random(6) . ".csv", 'wr');
         fputcsv($f, $labels, ",");
@@ -94,11 +87,15 @@ trait BuilderToCsv
         return $rows;
     }
 
-    function getFields(IteratorElement &$fields)
+    function getFields(SectionFactory &$factory)
     {
+        /**
+         * @var IteratorElement $fields
+         */
+        $fields = $factory->getSectionFields();
+
         if ($fields->type === IteratorElement::FIELD) {
             $labels[] = $fields->label;
-            $fields->csv_ref = $fields->label;
         } else {
             $labels = [];
             $pushed_labels = [];
@@ -114,8 +111,8 @@ trait BuilderToCsv
             if ($value->type === IteratorElement::SECTION) {
                 throw_unless(!empty($value->root), new Exception(
                     "Invalid CSV/Excel schema: nested section \"{$value->label}\" has no 'root'. "
-                    . "A non-repeating nested section only ever produces a single set of values, "
-                    . "which is useless in a flat export — declare its fields directly on the parent section instead."
+                        . "A non-repeating nested section only ever produces a single set of values, "
+                        . "which is useless in a flat export — declare its fields directly on the parent section instead."
                 ));
 
                 $this->getSectionFields($value, $labels, $pushed_labels);
@@ -123,7 +120,6 @@ trait BuilderToCsv
                 if (! in_array($value->label, $labels)) {
                     $labels[] = $value->label;
                 }
-                $value->csv_ref = $value->label;
             }
         }
     }
