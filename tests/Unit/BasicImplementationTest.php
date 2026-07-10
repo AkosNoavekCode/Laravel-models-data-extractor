@@ -23,14 +23,8 @@ describe('Model implementation is working', function () {
                     "field_one" => ["path" => "field_one", "label" => $label_one = "label one"],
                     "field_two" => ["path" => "field_two", "label" => $label_two = "label two"],
                     "field_three" => ["path" => "field_two", "label" => $label_two = "label two"],
-                    "field_four" => [
-                        "type" => "section",
-                        "label" => "section label",
-                        "fields" => [
-                            "field_three" => ["path" => "field_two", "label" => $label_two = "label three"],
-                            "field_four" => ["path" => "field_two", "label" => $label_two = "label two"],
-                        ]
-                    ],
+                    "field_four" => ["path" => "field_two", "label" => $label_two = "label three"],
+                    "field_five" => ["path" => "field_two", "label" => $label_two = "label two"],
                 ],
             ]);
 
@@ -131,14 +125,8 @@ describe('Array implementation is working', function () {
                     "field_one" => ["path" => "field_one", "label" => $label_one = "label one"],
                     "field_two" => ["path" => "field_two", "label" => $label_two = "label two"],
                     "field_three" => ["path" => "field_two", "label" => $label_two = "label two"],
-                    "field_four" => [
-                        "type" => "section",
-                        "label" => "section label",
-                        "fields" => [
-                            "field_three" => ["path" => "field_two", "label" => $label_two = "label three"],
-                            "field_four" => ["path" => "field_two", "label" => $label_two = "label two"],
-                        ]
-                    ],
+                    "field_four" => ["path" => "field_two", "label" => $label_two = "label three"],
+                    "field_five" => ["path" => "field_two", "label" => $label_two = "label two"],
                 ],
             ]);
 
@@ -233,14 +221,8 @@ describe('Object implementation is working', function () {
                     "field_one" => ["path" => "field_one", "label" => $label_one = "label one"],
                     "field_two" => ["path" => "field_two", "label" => $label_two = "label two"],
                     "field_three" => ["path" => "field_two", "label" => $label_two = "label two"],
-                    "field_four" => [
-                        "type" => "section",
-                        "label" => "section label",
-                        "fields" => [
-                            "field_three" => ["path" => "field_two", "label" => $label_two = "label three"],
-                            "field_four" => ["path" => "field_two", "label" => $label_two = "label two"],
-                        ]
-                    ],
+                    "field_four" => ["path" => "field_two", "label" => $label_two = "label three"],
+                    "field_five" => ["path" => "field_two", "label" => $label_two = "label two"],
                 ],
             ]);
 

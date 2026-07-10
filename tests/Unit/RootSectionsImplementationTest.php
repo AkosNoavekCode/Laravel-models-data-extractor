@@ -207,24 +207,25 @@ describe('Root element pointing to a collection (one-to-many)', function () {
         expect($el->fields[0]->fields[0]->data)->toBe('Child One');
         expect($el->fields[1]->fields[0]->data)->toBe('Child Two');
 
-        // ogni clone condivide la stessa label di partenza ("Child name");
-        // il CSV deve produrre una singola colonna con i valori di tutti i
-        // cloni uniti da "; ", altrimenti i valori si sovrascriverebbero a
-        // vicenda sulla stessa chiave.
+        // ogni clone condivide la stessa label di partenza ("Child name"), ma
+        // rappresenta un record distinto: CSV ed Excel producono quindi una
+        // riga indipendente per ogni clone, nello stesso ordine della relazione.
         $file_path = DataExtractor::make($parent)->toCsv(data: $schema);
         $csv = array_map('str_getcsv', file($file_path));
-        [$header, $row] = $csv;
+        [$header, $row_one, $row_two] = $csv;
 
         expect($header)->toContain('Child name');
-        expect($row[array_search('Child name', $header)])->toBe('Child One; Child Two');
+        $child_name_index = array_search('Child name', $header);
+        expect($row_one[$child_name_index])->toBe('Child One');
+        expect($row_two[$child_name_index])->toBe('Child Two');
 
-        // stessa aspettativa per l'export Excel: una sola colonna "Child name"
-        // con i valori dei due cloni uniti da "; ".
+        // stessa aspettativa per l'export Excel: una riga per clone.
         $xlsx_path = DataExtractor::make($parent)->toXlsx(data: $schema);
-        [$xlsx_header, $xlsx_row] = readXlsxSheet($xlsx_path);
+        [$xlsx_header, $xlsx_row_one, $xlsx_row_two] = readXlsxSheet($xlsx_path);
 
         expect($xlsx_header)->toBe(['Child name']);
-        expect($xlsx_row)->toBe(['Child One; Child Two']);
+        expect($xlsx_row_one)->toBe(['Child One']);
+        expect($xlsx_row_two)->toBe(['Child Two']);
     });
 
     test('Array target: repeats the section once per related record, in order', function () {
@@ -324,12 +325,13 @@ describe('Root elements combined with nested sections', function () {
         expect($arr[0]['data'][2]['data'][0]['value'])->toBe('Child Two');
 
         // il campo "field_one" della section esterna deve mantenere la propria
-        // colonna anche quando e' seguito da una section con root a piu' elementi:
-        // in caso contrario le colonne si sovrascriverebbero a vicenda.
+        // colonna anche quando e' seguito da una section con root a piu' elementi,
+        // ed essere replicato su ogni riga generata dai due cloni.
         $xlsx_path = DataExtractor::make($parent)->toXlsx(data: $schema);
-        [$xlsx_header, $xlsx_row] = readXlsxSheet($xlsx_path);
+        [$xlsx_header, $xlsx_row_one, $xlsx_row_two] = readXlsxSheet($xlsx_path);
 
         expect($xlsx_header)->toBe(['label one', 'Child name']);
-        expect($xlsx_row)->toBe(['value one', 'Child One; Child Two']);
+        expect($xlsx_row_one)->toBe(['value one', 'Child One']);
+        expect($xlsx_row_two)->toBe(['value one', 'Child Two']);
     });
 });
