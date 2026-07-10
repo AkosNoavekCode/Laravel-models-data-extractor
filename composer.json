@@ -1,6 +1,6 @@
 {
 	"name": "akosnoavek/models-data-extractor",
-	"description": "Extract your data from models or other data structures based on a given schema to the formats you prefer",
+	"description": "Extract information from models or other data structures based on a given schema to the formats you prefer",
 	"type": "library",
 	"license": "MIT",
 	"require": {
