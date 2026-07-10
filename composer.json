@@ -23,14 +23,6 @@
 			"email": "g.mannai@invisiblefarm.com"
 		}
 	],
-	"laravel": {
-		"providers": [
-			"Akosnoavek\\DataExtractor\\Support\\ServiceProvider"
-		],
-		"aliases": {
-			"DataExtractor": "Akosnoavek\\DataExtractor\\Facades\\DataExtractor"
-		}
-	},
 	"minimum-stability": "dev",
 	"require-dev": {
 		"pestphp/pest": "4.x-dev",
@@ -44,6 +36,16 @@
 	"config": {
 		"allow-plugins": {
 			"pestphp/pest-plugin": true
+		}
+	},
+	"extra": {
+		"laravel": {
+			"providers": [
+				"AkosNoavek\\DataExtractor\\Support\\ServiceProvider"
+			],
+			"aliases": {
+				"DataExtractor": "AkosNoavek\\DataExtractor\\Facades\\DataExtractor"
+			}
 		}
 	}
 }
