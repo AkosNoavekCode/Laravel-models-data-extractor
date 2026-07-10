@@ -4,7 +4,7 @@
 	"type": "library",
 	"license": "MIT",
 	"require": {
-		"laravel/laravel": "12",
+		"laravel/framework": "^12.0",
 		"php": "^8.2",
 		"phpoffice/phpspreadsheet": "dev-master"
 	},
