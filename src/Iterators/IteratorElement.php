@@ -58,6 +58,16 @@ class IteratorElement
 
     public const SECTION = 'section';
 
+    function previous()
+    {
+        return $this->previous_sibling;
+    }
+
+    function next()
+    {
+        return $this->next_sibling;
+    }
+
     public function __construct(array $data)
     {
         foreach ($data as $key => $value) {
