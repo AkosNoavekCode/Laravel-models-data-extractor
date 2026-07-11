@@ -114,11 +114,9 @@ class IteratorElement
                 if ($index === 0) {
                     $previous = $field;
                 } elseif ($index > 0) {
-                    $previous->next_sibling = $field;
-                    $field->previous_sibling = $previous;
+                    $previous->next_sibling = &$field;
+                    $field->previous_sibling = &$previous;
                     $previous = $field;
-                } elseif ($index === count($fields) - 1) {
-                    $field->previous_sibling = $previous;
                 }
                 $index++;
             }
