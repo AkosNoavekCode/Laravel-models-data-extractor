@@ -47,7 +47,7 @@ describe('Model implementation is working', function () {
         // una section annidata senza "root" produrrebbe un solo blocco di valori:
         // inutile in un export tabellare, i suoi campi vanno dichiarati
         // direttamente sulla section padre.
-        $call = fn () => DataExtractor::make($concrete)
+        $call = fn() => DataExtractor::make($concrete)
             ->toXlsx(data: [
                 "type" => "section",
                 "label" => "outer section label",
@@ -65,6 +65,28 @@ describe('Model implementation is working', function () {
             ]);
 
         expect($call)->toThrow(Exception::class, "nested section \"inner section label\" has no 'root'");
+    });
+
+    test('Excel method merges duplicate labels into a single column', function () {
+        $model = new class extends Model {};
+        $concrete = new $model();
+        $concrete->field_one = "one";
+        $concrete->field_two = "two";
+
+        $file_path = DataExtractor::make($concrete)
+            ->toXlsx(data: [
+                "type" => "section",
+                "label" => "outer section label",
+                "fields" => [
+                    "field_one" => ["path" => "field_one", "label" => "shared label"],
+                    "field_two" => ["path" => "field_two", "label" => "shared label"],
+                ],
+            ]);
+
+        [$header, $row] = readXlsxSheet($file_path);
+
+        expect($header)->toBe(['shared label']);
+        expect($row)->toBe(['one; two']);
     });
 
     test('Excel method with a rooted nested section is working as expected', function () {

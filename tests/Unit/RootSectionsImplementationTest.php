@@ -102,10 +102,13 @@ describe('Root element pointing to a single related model', function () {
     test('CSV method is working as expected', function () {
         $manager = new class extends Model {};
         $manager->name = "Mario Rossi";
+        $manager->role = "Boss";
 
         $employee = new class extends Model {};
         $employee->setRelation('manager', $manager);
 
+        // due campi sullo stesso root a valore singolo: devono finire sulla
+        // stessa riga (non una riga per campo).
         $file_path = DataExtractor::make($employee)
             ->toCsv(data: [
                 "type" => "section",
@@ -117,23 +120,29 @@ describe('Root element pointing to a single related model', function () {
                         "root" => "manager",
                         "fields" => [
                             "manager_name" => ["path" => "name", "label" => "Manager name"],
+                            "manager_role" => ["path" => "role", "label" => "Manager role"],
                         ],
                     ],
                 ],
             ]);
 
-        $content = file_get_contents($file_path);
-        expect($content)->toContain('Manager name');
-        expect($content)->toContain($manager->name);
+        $csv = array_map('str_getcsv', file($file_path));
+        expect($csv)->toBe([
+            ['Manager name', 'Manager role'],
+            ['Mario Rossi', 'Boss'],
+        ]);
     });
 
     test('Excel method is working as expected', function () {
         $manager = new class extends Model {};
         $manager->name = "Mario Rossi";
+        $manager->role = "Boss";
 
         $employee = new class extends Model {};
         $employee->setRelation('manager', $manager);
 
+        // due campi sullo stesso root a valore singolo: devono finire sulla
+        // stessa riga (non una riga per campo).
         $file_path = DataExtractor::make($employee)
             ->toXlsx(data: [
                 "type" => "section",
@@ -145,14 +154,15 @@ describe('Root element pointing to a single related model', function () {
                         "root" => "manager",
                         "fields" => [
                             "manager_name" => ["path" => "name", "label" => "Manager name"],
+                            "manager_role" => ["path" => "role", "label" => "Manager role"],
                         ],
                     ],
                 ],
             ]);
 
         [$header, $row] = readXlsxSheet($file_path);
-        expect($header)->toBe(['Manager name']);
-        expect($row)->toBe([$manager->name]);
+        expect($header)->toBe(['Manager name', 'Manager role']);
+        expect($row)->toBe([$manager->name, $manager->role]);
     });
 });
 
@@ -333,5 +343,13 @@ describe('Root elements combined with nested sections', function () {
         expect($xlsx_header)->toBe(['label one', 'Child name']);
         expect($xlsx_row_one)->toBe(['value one', 'Child One']);
         expect($xlsx_row_two)->toBe(['value one', 'Child Two']);
+
+        // stessa aspettativa per il CSV: stesso identico algoritmo di riga.
+        $csv_path = DataExtractor::make($parent)->toCsv(data: $schema);
+        [$csv_header, $csv_row_one, $csv_row_two] = array_map('str_getcsv', file($csv_path));
+
+        expect($csv_header)->toBe(['label one', 'Child name']);
+        expect($csv_row_one)->toBe(['value one', 'Child One']);
+        expect($csv_row_two)->toBe(['value one', 'Child Two']);
     });
 });

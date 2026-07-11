@@ -12,93 +12,45 @@ trait BuilderToCsv
 {
     function toCsv(SectionFactory $factory, ?string $sezione = null)
     {
-        /**
-         * @var IteratorElement $fields
-         */
-        $elements = $factory->getSectionFields();
-
         $iterator = new BuilderIterator(target: $this->target, factory: $factory, separator: "<br>");
 
-        $built = $iterator->getFromBuilt($elements);
-
-        $labels = $this->getFields($built);
+        $labels = $this->getFields($factory);
 
         $f = fopen($file_path = "/tmp/" . Str::random(6) . ".csv", 'wr');
         fputcsv($f, $labels, ",");
 
-        $res = $this->toCsvArray($built);
+        $this->toCsvArray($iterator, $f, $labels);
 
-        $data = [];
-
-        foreach ($res as $res_value) {
-            $parsed = [];
-            foreach ($labels as $key => $value) {
-                $parsed[$key] = $res_value[$value] ?? null;
-            }
-            $data[] = $parsed;
-        }
-
-        foreach ($data as $value) {
-            fputcsv($f, $value, ",");
-        }
         fclose($f);
 
         return $file_path;
     }
 
     /**
-     * @return array<int, array<string, mixed>> a list of rows, one entry per section instance
+     * @param array<int, string> $labels column order, matching the header row
      */
-    function toCsvArray(IteratorElement $data): array
+    function toCsvArray(BuilderIterator &$builder, &$f, array $labels): void
     {
-        if ($data->type === IteratorElement::SECTION) {
-            return $this->parseCsvArraySection($data);
-        }
-
-        return [[$data->csv_ref => $data->data]];
+        $builder->buildUsing(function (?array $row = []) use ($f, $labels) {
+            if ($row) {
+                $line = [];
+                foreach ($labels as $label) {
+                    $line[] = $row[$label] ?? null;
+                }
+                fputcsv($f, $line);
+            }
+        }, false);
     }
 
-    /**
-     * A nested section always represents a repeatable ("root") relation, so each of its
-     * instances becomes its own row. A section's direct fields are instead constant values,
-     * replicated onto every row produced by its child sections (if any).
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    function parseCsvArraySection(IteratorElement $data): array
+    function getFields(SectionFactory &$factory)
     {
-        $base = [];
-        $child_row_groups = [];
+        /**
+         * @var IteratorElement $fields
+         */
+        $fields = $factory->getSectionFields();
 
-        foreach ($data->fields as $field) {
-            if ($field->type === IteratorElement::SECTION) {
-                $child_row_groups[] = $this->parseCsvArraySection($field);
-            } else {
-                $base[$field->csv_ref] = isset($base[$field->csv_ref])
-                    ? $base[$field->csv_ref] . "; " . $field->data
-                    : $field->data;
-            }
-        }
-
-        if (empty($child_row_groups)) {
-            return [$base];
-        }
-
-        $rows = [];
-        foreach ($child_row_groups as $group) {
-            foreach ($group as $child_row) {
-                $rows[] = array_merge($base, $child_row);
-            }
-        }
-
-        return $rows;
-    }
-
-    function getFields(IteratorElement &$fields)
-    {
         if ($fields->type === IteratorElement::FIELD) {
             $labels[] = $fields->label;
-            $fields->csv_ref = $fields->label;
         } else {
             $labels = [];
             $pushed_labels = [];
@@ -114,8 +66,8 @@ trait BuilderToCsv
             if ($value->type === IteratorElement::SECTION) {
                 throw_unless(!empty($value->root), new Exception(
                     "Invalid CSV/Excel schema: nested section \"{$value->label}\" has no 'root'. "
-                    . "A non-repeating nested section only ever produces a single set of values, "
-                    . "which is useless in a flat export — declare its fields directly on the parent section instead."
+                        . "A non-repeating nested section only ever produces a single set of values, "
+                        . "which is useless in a flat export — declare its fields directly on the parent section instead."
                 ));
 
                 $this->getSectionFields($value, $labels, $pushed_labels);
@@ -123,7 +75,6 @@ trait BuilderToCsv
                 if (! in_array($value->label, $labels)) {
                     $labels[] = $value->label;
                 }
-                $value->csv_ref = $value->label;
             }
         }
     }

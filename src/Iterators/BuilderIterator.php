@@ -2,6 +2,7 @@
 
 namespace AkosNoavek\DataExtractor\Iterators;
 
+use AkosNoavek\DataExtractor\Decorators\Iterators\AdvancedIteratorBuilder;
 use AkosNoavek\DataExtractor\Factories\SectionFactory;
 use AkosNoavek\DataExtractor\Iterators\BuilderIteratorInterface;
 use AkosNoavek\DataExtractor\Iterators\IteratorElement;
@@ -17,6 +18,8 @@ use ReflectionClass;
  */
 class BuilderIterator implements BuilderIteratorInterface
 {
+    use AdvancedIteratorBuilder;
+
     public mixed $current_target;
 
     public string $curr_index;

@@ -9,7 +9,8 @@ describe('Model implementation is working', function () {
         $model = new class extends Model {};
         $concrete = new $model();
         $concrete->field = "value test";
-
+        $concrete->field_one = "one";
+        $concrete->field_two = "two";
 
         /**
          * @var string $file_path
@@ -28,8 +29,13 @@ describe('Model implementation is working', function () {
                 ],
             ]);
 
-        $content = file_get_contents($file_path);
-        expect($content)->toContain($concrete->field);
+        // le colonne che condividono la stessa label ("label one", "label
+        // two") vengono unite in un'unica colonna, i valori separati da "; ".
+        $csv = array_map('str_getcsv', file($file_path));
+        expect($csv)->toBe([
+            ['label one', 'label two', 'label three'],
+            ['value test; one', 'two; two; two', 'two'],
+        ]);
     });
 
     test('HTML method is working as expected', function () {
