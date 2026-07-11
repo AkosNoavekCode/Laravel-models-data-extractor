@@ -130,9 +130,6 @@ class BuilderIterator implements BuilderIteratorInterface
                         $clones = [];
                         foreach ($root_elements as $target_element_model) {
                             $this->current_target = $target_element_model;
-                            if (! json_decode(json_encode($value), true)) {
-                                dd($value);
-                            }
                             $clone = new IteratorElement(json_decode(json_encode($value), true));
                             $this->parseSection($clone);
                             if ($this->sectionShouldDisplay($clone)) {
