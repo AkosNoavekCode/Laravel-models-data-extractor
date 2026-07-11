@@ -19,7 +19,7 @@ trait BuilderToCsv
         $f = fopen($file_path = "/tmp/" . Str::random(6) . ".csv", 'wr');
         fputcsv($f, $labels, ",");
 
-        $this->toCsvArray($iterator, $f);
+        $this->toCsvArray($iterator, $f, $labels);
 
         fclose($f);
 
@@ -27,13 +27,18 @@ trait BuilderToCsv
     }
 
     /**
-     * @return array<int, array<string, mixed>> a list of rows, one entry per section instance
+     * @param array<int, string> $labels column order, matching the header row
      */
-    function toCsvArray(BuilderIterator &$builder, &$f): void
+    function toCsvArray(BuilderIterator &$builder, &$f, array $labels): void
     {
-        $builder->buildUsing(function (?array $data = []) use ($f) {
-            if ($data)
-                fputcsv($f, $data);
+        $builder->buildUsing(function (?array $row = []) use ($f, $labels) {
+            if ($row) {
+                $line = [];
+                foreach ($labels as $label) {
+                    $line[] = $row[$label] ?? null;
+                }
+                fputcsv($f, $line);
+            }
         }, false);
     }
 
