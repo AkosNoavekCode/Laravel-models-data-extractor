@@ -12,7 +12,7 @@ trait BuilderToCsv
 {
     function toCsv(SectionFactory $factory, ?string $sezione = null)
     {
-        $iterator = new BuilderIterator(target: $this->target, factory: $factory, separator: "<br>");
+        $iterator = new BuilderIterator(target: $this->target, factory: $factory, separator: ";");
 
         $labels = $this->getFields($factory);
 

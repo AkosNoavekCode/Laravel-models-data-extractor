@@ -230,19 +230,64 @@ class BuilderIterator implements BuilderIteratorInterface
                             if (str_contains($path, '.')) {
                                 $records = $this->getPartValue(explode('.', $path), $model);
 
+                                /**
+                                 * We check if an empty record should be pushed
+                                 * Since the !empty() method covers only for arrays and objects
+                                 * not collection we need to add a reflection check on the method count
+                                 */
+                                $should_push = false;
+                                try {
+                                    $reflection = new ReflectionClass($records);
+                                    if (
+                                        $reflection->hasMethod('count')
+                                        && $records->count() === 0
+                                    ) {
+                                        $should_push = true;
+                                    }
+                                } catch (\Exception $e) {
+                                }
                                 if (!empty($records)) {
                                     $records->each(function ($record) use (&$models, $index) {
                                         $models[$index][] = $record;
                                     });
+
+                                    if ($should_push) {
+                                        $models[$index][] = [];
+                                    }
+                                } else {
+                                    $models[$index][] = [];
                                 }
                                 // $models[$index] = array_merge($models[$index], getPartValue(explode('.', $path), $model));
                             } elseif ($model) {
                                 $records = $model->{$path};
 
+                                /**
+                                 * We check if an empty record should be pushed
+                                 * Since the !empty() method covers only for arrays and objects
+                                 * not collection we need to add a reflection check on the method count
+                                 */
+                                $should_push = false;
+                                try {
+                                    $reflection = new ReflectionClass($records);
+                                    if (
+                                        $reflection->hasMethod('count')
+                                        && $records->count() === 0
+                                    ) {
+                                        $should_push = true;
+                                    }
+                                } catch (\Exception $e) {
+                                }
+
                                 if (!empty($records)) {
                                     $records->each(function ($record) use (&$models, $index) {
                                         $models[$index][] = $record;
                                     });
+
+                                    if ($should_push) {
+                                        $models[$index][] = [];
+                                    }
+                                } else {
+                                    $models[$index][] = [];
                                 }
                             }
                         }
@@ -264,7 +309,7 @@ class BuilderIterator implements BuilderIteratorInterface
                     if (str_contains($el[count($el) - 1], '.'))
                         $row_value = $this->getPartValue(explode('.', $el[count($el) - 1]), $val);
                     else
-                        $row_value = $val?->{$el[count($el) - 1]};
+                        $row_value = safe_value($val, $el[count($el) - 1]);
 
                     if ($element->date) {
                         try {
@@ -277,7 +322,9 @@ class BuilderIterator implements BuilderIteratorInterface
                     }
 
                     if ($v && trim($v)) {
-                        $str .= $end . trim($v);
+                        $str .= trim($v) . $end;
+                    } else if (str_contains($key, ".*.")) {
+                        $str .= $this->separator;
                     }
                 }
             }

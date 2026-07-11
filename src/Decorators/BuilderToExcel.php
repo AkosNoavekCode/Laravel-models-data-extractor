@@ -16,7 +16,7 @@ trait BuilderToExcel
 {
     function toExcel(SectionFactory $factory, ?string $sezione = null, ?string $title = null)
     {
-        $iterator = new BuilderIterator(target: $this->target, factory: $factory, separator: "<br>");
+        $iterator = new BuilderIterator(target: $this->target, factory: $factory, separator: ";");
 
         $labels = $this->getExcelFields($factory);
 
