@@ -19,21 +19,8 @@ trait BuilderToCsv
         $f = fopen($file_path = "/tmp/" . Str::random(6) . ".csv", 'wr');
         fputcsv($f, $labels, ",");
 
-        $res = $this->toCsvArray($built);
+        $this->toCsvArray($iterator, $f);
 
-        $data = [];
-
-        foreach ($res as $res_value) {
-            $parsed = [];
-            foreach ($labels as $key => $value) {
-                $parsed[$key] = $res_value[$value] ?? null;
-            }
-            $data[] = $parsed;
-        }
-
-        foreach ($data as $value) {
-            fputcsv($f, $value, ",");
-        }
         fclose($f);
 
         return $file_path;
@@ -42,49 +29,12 @@ trait BuilderToCsv
     /**
      * @return array<int, array<string, mixed>> a list of rows, one entry per section instance
      */
-    function toCsvArray(IteratorElement $data): array
+    function toCsvArray(BuilderIterator &$builder, &$f): void
     {
-        if ($data->type === IteratorElement::SECTION) {
-            return $this->parseCsvArraySection($data);
-        }
-
-        return [[$data->csv_ref => $data->data]];
-    }
-
-    /**
-     * A nested section always represents a repeatable ("root") relation, so each of its
-     * instances becomes its own row. A section's direct fields are instead constant values,
-     * replicated onto every row produced by its child sections (if any).
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    function parseCsvArraySection(IteratorElement $data): array
-    {
-        $base = [];
-        $child_row_groups = [];
-
-        foreach ($data->fields as $field) {
-            if ($field->type === IteratorElement::SECTION) {
-                $child_row_groups[] = $this->parseCsvArraySection($field);
-            } else {
-                $base[$field->csv_ref] = isset($base[$field->csv_ref])
-                    ? $base[$field->csv_ref] . "; " . $field->data
-                    : $field->data;
-            }
-        }
-
-        if (empty($child_row_groups)) {
-            return [$base];
-        }
-
-        $rows = [];
-        foreach ($child_row_groups as $group) {
-            foreach ($group as $child_row) {
-                $rows[] = array_merge($base, $child_row);
-            }
-        }
-
-        return $rows;
+        $builder->buildUsing(function (?array $data = []) use ($f) {
+            if ($data)
+                fputcsv($f, $data);
+        }, false);
     }
 
     function getFields(SectionFactory &$factory)

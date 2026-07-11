@@ -21,9 +21,9 @@ class IteratorElement
 
     public ?IteratorElement $parent_reference = null;
 
-    public ?IteratorElement $next_sibling = null;
+    private ?IteratorElement $next_sibling = null;
 
-    public ?IteratorElement $previous_sibling = null;
+    private ?IteratorElement $previous_sibling = null;
 
     public ?array $extra_attributes = null;
 
