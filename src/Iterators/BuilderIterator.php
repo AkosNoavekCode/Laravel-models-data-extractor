@@ -236,15 +236,17 @@ class BuilderIterator implements BuilderIteratorInterface
                                  * not collection we need to add a reflection check on the method count
                                  */
                                 $should_push = false;
-                                try {
-                                    $reflection = new ReflectionClass($records);
-                                    if (
-                                        $reflection->hasMethod('count')
-                                        && $records->count() === 0
-                                    ) {
-                                        $should_push = true;
+                                if ($records) {
+                                    try {
+                                        $reflection = new ReflectionClass($records);
+                                        if (
+                                            $reflection->hasMethod('count')
+                                            && $records->count() === 0
+                                        ) {
+                                            $should_push = true;
+                                        }
+                                    } catch (\Exception $e) {
                                     }
-                                } catch (\Exception $e) {
                                 }
                                 if (!empty($records)) {
                                     $records->each(function ($record) use (&$models, $index) {
@@ -267,15 +269,17 @@ class BuilderIterator implements BuilderIteratorInterface
                                  * not collection we need to add a reflection check on the method count
                                  */
                                 $should_push = false;
-                                try {
-                                    $reflection = new ReflectionClass($records);
-                                    if (
-                                        $reflection->hasMethod('count')
-                                        && $records->count() === 0
-                                    ) {
-                                        $should_push = true;
+                                if ($records) {
+                                    try {
+                                        $reflection = new ReflectionClass($records);
+                                        if (
+                                            $reflection->hasMethod('count')
+                                            && $records->count() === 0
+                                        ) {
+                                            $should_push = true;
+                                        }
+                                    } catch (\Exception $e) {
                                     }
-                                } catch (\Exception $e) {
                                 }
 
                                 if (!empty($records)) {

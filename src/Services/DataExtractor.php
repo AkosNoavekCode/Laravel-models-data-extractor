@@ -55,9 +55,7 @@ class DataExtractor
 
   function toCsv(?string $filename = null, mixed $data = null, ?string $section = null)
   {
-    if (! $this->extracted) {
-      $this->extract($filename, $data, $section, false);
-    }
+    $this->prepare($filename, $data, $section);
 
     $this->factory->section_name = $section;
     $data = $this->builder->toCsv($this->factory, $section);
@@ -92,14 +90,13 @@ class DataExtractor
     return $data;
   }
 
-  function toXlsx(?string $filename = null, mixed $data = null, ?string $section = null)
+  function toXlsx(?string $filename = null, mixed $data = null, ?string $section = null, ?callable $using = null)
   {
-    if (! $this->extracted) {
-      $this->extract($filename, $data, $section, false);
-    }
+    $this->prepare($filename, $data, $section);
 
     $this->factory->section_name = $section;
-    $data = $this->builder->toExcel($this->factory);
+    $data = $this->builder->toExcel(factory: $this->factory, using: $using);
+
     if ($this->builder->should_delete_template)
       unlink($this->builder->filename);
     return $data;
@@ -116,5 +113,17 @@ class DataExtractor
     if ($this->builder->should_delete_template)
       unlink($this->builder->filename);
     return $data;
+  }
+
+  private function prepare(?string $filename = null, mixed $data = null, ?string $section = null)
+  {
+    throw_if(
+      empty($filename)
+        && empty($data),
+      new Exception("Please provide a schema.")
+    );
+
+    $this->builder = new ConcreteBuilder($this->target, $filename, ($data) ? json_encode($data) : null);
+    $this->factory = ModelSectionFieldsFactory::make($this->builder->filename, $section);
   }
 }

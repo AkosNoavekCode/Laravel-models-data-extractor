@@ -14,7 +14,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 trait BuilderToExcel
 {
-    function toExcel(SectionFactory $factory, ?string $sezione = null, ?string $title = null)
+    function toExcel(SectionFactory $factory, ?string $sezione = null, ?string $title = null, ?callable $using = null)
     {
         $iterator = new BuilderIterator(target: $this->target, factory: $factory, separator: ";");
 
@@ -36,7 +36,7 @@ trait BuilderToExcel
             $header_index++;
         }
 
-        $this->toXlsxArray($iterator, $worksheet, $labels);
+        $this->toXlsxArray($iterator, $worksheet, $labels, $using);
 
         $writer = new Xlsx($spreadsheet);
         $writer->save($file_path = "/tmp/" . Str::random(6) . ".xlsx");
@@ -58,14 +58,17 @@ trait BuilderToExcel
     /**
      * @param array<int, array{label: string, column: string}> $labels
      */
-    function toXlsxArray(BuilderIterator &$iterator, Worksheet &$worksheet, array $labels): void
+    function toXlsxArray(BuilderIterator &$iterator, Worksheet &$worksheet, array $labels, ?callable $using = null): void
     {
         $index = 2;
-        $iterator->buildUsing(function (?array $row = []) use (&$worksheet, &$index, $labels) {
+        $iterator->buildUsing(function (?array $row = []) use (&$worksheet, &$index, $labels, $using) {
             if ($row) {
                 foreach ($labels as $value) {
                     $worksheet->setCellValue($value["column"] . $index, $row[$value["label"]] ?? null);
                 }
+
+                if ($using)
+                    $using($row);
                 $index++;
             }
         }, false);
