@@ -30,6 +30,7 @@ class BuilderIterator implements BuilderIteratorInterface
         private mixed $target,
         private SectionFactory $factory,
         private ?string $separator = ";",
+        private ?string $inner_separator = "|",
     ) {
         $this->current_target = $target;
     }
@@ -206,9 +207,12 @@ class BuilderIterator implements BuilderIteratorInterface
         /**
          * Multiple elements parsing
          */
+        $use_inner = false;
         if (str_contains($key, ".*.")) {
             $el = explode(".*.", $key);
             $str = "";
+
+            $use_inner = count($el) > 3;
 
             if (count($el) > 2) {
                 $model = null;
@@ -307,9 +311,9 @@ class BuilderIterator implements BuilderIteratorInterface
             }
 
             if (!empty($rows)) {
+                $should_add_separator = false;
+                $end = ($use_inner) ? $this->inner_separator : $this->separator;
                 foreach ($rows as $i => $val) {
-                    $end = ($i != 0) ? $this->separator : "";
-
                     if (str_contains($el[count($el) - 1], '.'))
                         $row_value = $this->getPartValue(explode('.', $el[count($el) - 1]), $val);
                     else
@@ -326,8 +330,15 @@ class BuilderIterator implements BuilderIteratorInterface
                     }
 
                     if ($v && trim($v)) {
-                        $str .= trim($v) . $end;
+                        if ($should_add_separator) {
+                            $str .= $end . trim($v);
+                        } else {
+                            $str .= trim($v);
+                        }
+
+                        $should_add_separator = true;
                     } else if (str_contains($key, ".*.")) {
+                        $should_add_separator = false;
                         $str .= $this->separator;
                     }
                 }
