@@ -211,8 +211,7 @@ class BuilderIterator implements BuilderIteratorInterface
         if (str_contains($key, ".*.")) {
             $el = explode(".*.", $key);
             $str = "";
-
-            $use_inner = count($el) > 3;
+            $use_inner = true;
 
             if (count($el) > 2) {
                 $model = null;
