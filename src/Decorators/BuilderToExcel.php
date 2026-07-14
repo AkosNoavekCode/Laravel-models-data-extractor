@@ -7,10 +7,8 @@ use AkosNoavek\DataExtractor\Iterators\BuilderIterator;
 use AkosNoavek\DataExtractor\Iterators\IteratorElement;
 use Exception;
 use Illuminate\Support\Str;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use OpenSpout\Common\Entity\Row;
+use OpenSpout\Writer\XLSX\Writer;
 
 trait BuilderToExcel
 {
@@ -20,56 +18,40 @@ trait BuilderToExcel
 
         $labels = $this->getExcelFields($factory);
 
-        $spreadsheet = new Spreadsheet();
-        $worksheet = $spreadsheet->getSheet(0);
+        $writer = new Writer();
+        $writer->openToFile($file_path = "/tmp/" . Str::random(6) . ".xlsx");
+
         if ($title)
-            $worksheet->setTitle($title);
+            $writer->getCurrentSheet()->setName($title);
 
-        $header_index = 0;
+        $writer->addRow(Row::fromValues($labels));
 
-        foreach ($labels as $value) {
-            $worksheet->setCellValue($value["column"] . 1, $value["label"]);
+        $this->toXlsxArray($iterator, $writer, $labels, $using);
 
-            $style = $worksheet->getStyle($this->getColumnLetter($header_index) . ":" .  $this->getColumnLetter($header_index));
-            $style->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_TEXT);
-
-            $header_index++;
-        }
-
-        $this->toXlsxArray($iterator, $worksheet, $labels, $using);
-
-        $writer = new Xlsx($spreadsheet);
-        $writer->save($file_path = "/tmp/" . Str::random(6) . ".xlsx");
+        $writer->close();
 
         return $file_path;
     }
 
-    private function getColumnLetter($index): string
-    {
-        $letters = '';
-        while ($index >= 0) {
-            $letters = chr($index % 26 + 65) . $letters;
-            $index = floor($index / 26) - 1;
-        }
-
-        return $letters;
-    }
-
     /**
-     * @param array<int, array{label: string, column: string}> $labels
+     * @param array<int, string> $labels column order, matching the header row
      */
-    function toXlsxArray(BuilderIterator &$iterator, Worksheet &$worksheet, array $labels, ?callable $using = null): void
+    function toXlsxArray(BuilderIterator &$iterator, Writer $writer, array $labels, ?callable $using = null): void
     {
-        $index = 2;
-        $iterator->buildUsing(function (?array $row = []) use (&$worksheet, &$index, $labels, $using) {
+        $iterator->buildUsing(function (?array $row = []) use ($writer, $labels, $using) {
             if ($row) {
-                foreach ($labels as $value) {
-                    $worksheet->setCellValue($value["column"] . $index, $row[$value["label"]] ?? null);
+                $line = [];
+                foreach ($labels as $label) {
+                    // Cast to string so cells are written as plain text, matching the
+                    // CSV export and avoiding Excel auto-coercing numeric/date-looking
+                    // values (e.g. codes with leading zeros) into numbers or dates.
+                    $value = $row[$label] ?? null;
+                    $line[] = is_null($value) ? null : (string) $value;
                 }
+                $writer->addRow(Row::fromValues($line));
 
                 if ($using)
                     $using($row);
-                $index++;
             }
         }, false);
     }
@@ -82,18 +64,17 @@ trait BuilderToExcel
         $fields = $factory->getSectionFields();
 
         if ($fields->type === IteratorElement::FIELD) {
-            $labels[] = ["label" => $fields->label, "column" => $this->getColumnLetter(0)];
+            $labels[] = $fields->label;
             $fields->csv_ref = $fields->label;
         } else {
             $labels = [];
-            $i = 0;
-            $this->getExcelSectionFields($fields, $labels, $i);
+            $this->getExcelSectionFields($fields, $labels);
         }
 
         return $labels;
     }
 
-    function getExcelSectionFields(IteratorElement &$fields, array &$labels, int &$i)
+    function getExcelSectionFields(IteratorElement &$fields, array &$labels)
     {
         foreach ($fields->fields as &$value) {
             if ($value->type === IteratorElement::SECTION) {
@@ -103,11 +84,10 @@ trait BuilderToExcel
                         . "which is useless in a flat export — declare its fields directly on the parent section instead."
                 ));
 
-                $this->getExcelSectionFields($value, $labels, $i);
+                $this->getExcelSectionFields($value, $labels);
             } else {
-                if (! in_array($value->label, array_column($labels, 'label'))) {
-                    $labels[] = ["label" => $value->label, "column" => $this->getColumnLetter($i)];
-                    $i++;
+                if (! in_array($value->label, $labels)) {
+                    $labels[] = $value->label;
                 }
                 $value->csv_ref = $value->label;
             }
