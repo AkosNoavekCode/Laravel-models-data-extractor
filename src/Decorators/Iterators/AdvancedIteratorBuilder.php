@@ -144,10 +144,27 @@ trait AdvancedIteratorBuilder
                     $this->current_target = $this->target;
                 } elseif (!empty($root_elements)) {
                     // Root resolves to a collection: one nested row per item.
-                    foreach ($root_elements as $target_element_model) {
-                        $this->current_target = $target_element_model;
-                        $this->collectRows($value, $callback);
+                    if ($root_elements::class === "Illuminate\Database\Eloquent\Builder") {
+                        $take = 1000;
+                        $skip = 0;
+                        $res = $root_elements->skip($skip)->take($take)->get();
+                        while ($res->isNotEmpty()) {
+                            if ($skip) {
+                                $res = $root_elements->skip($skip)->take($take)->get();
+                            }
+                            foreach ($res as $target_element_model) {
+                                $this->current_target = $target_element_model;
+                                $this->collectRows($value, $callback);
+                            }
+                            $skip += $take;
+                        }
+                    } else {
+                        foreach ($root_elements as $target_element_model) {
+                            $this->current_target = $target_element_model;
+                            $this->collectRows($value, $callback);
+                        }
                     }
+
                     $this->current_target = $this->target;
                 }
             } else {
