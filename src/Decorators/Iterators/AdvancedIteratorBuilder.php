@@ -16,9 +16,7 @@ trait AdvancedIteratorBuilder
             if ($standard) {
                 $this->parseSectionUsing($el, $callback, $standard);
             } else {
-                foreach ($this->collectRows($el) as $row) {
-                    $callback($row);
-                }
+                $this->collectRows($el, $callback);
             }
         } else {
             $callback([$el->label => $this->getValueFromPath($el)]);
@@ -114,13 +112,12 @@ trait AdvancedIteratorBuilder
      *  label — the caller looks them up against the labels collected by
      *  getFields()/getExcelFields()
      */
-    function collectRows(IteratorElement &$section): array
+    function collectRows(IteratorElement &$section, callable $callback): void
     {
         $base = [];
-        $child_row_groups = [];
 
         foreach ($section->fields as &$value) {
-            $this->parsedSections[] = $value;
+            // $this->parsedSections[] = $value;
 
             if ($value->type === IteratorElement::SECTION) {
                 $root_elements = $this->getValueFromPath($value, $value->root);
@@ -143,19 +140,15 @@ trait AdvancedIteratorBuilder
                     // Root resolves to a single related model: still exactly
                     // one nested row (group), whatever fields it contains.
                     $this->current_target = $root_elements;
-                    $child_row_groups[] = $this->collectRows($value);
+                    $this->collectRows($value, $callback);
                     $this->current_target = $this->target;
                 } elseif (!empty($root_elements)) {
                     // Root resolves to a collection: one nested row per item.
-                    $rows = [];
                     foreach ($root_elements as $target_element_model) {
                         $this->current_target = $target_element_model;
-                        $rows = array_merge($rows, $this->collectRows($value));
+                        $this->collectRows($value, $callback);
                     }
                     $this->current_target = $this->target;
-                    $child_row_groups[] = $rows;
-                } else {
-                    $child_row_groups[] = [];
                 }
             } else {
                 $val = $this->parseElement($value);
@@ -165,17 +158,7 @@ trait AdvancedIteratorBuilder
             }
         }
 
-        if (empty($child_row_groups)) {
-            return [$base];
-        }
-
-        $rows = [];
-        foreach ($child_row_groups as $group) {
-            foreach ($group as $child_row) {
-                $rows[] = array_merge($base, $child_row);
-            }
-        }
-
-        return $rows;
+        $callback($base);
+        return;
     }
 }
