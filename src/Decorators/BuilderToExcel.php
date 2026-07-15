@@ -48,6 +48,19 @@ trait BuilderToExcel
                     $value = $row[$label] ?? null;
                     $line[] = is_null($value) ? null : (string) $value;
                 }
+
+                /**
+                 * We clear the values that are too large for the excel cell limit
+                 */
+                $line = array_map(function ($row) {
+                    $lenght = strlen($row);
+
+                    if ($lenght > 32766)
+                        $row = substr_replace($row, "", 32766, $lenght);
+
+                    return $row;
+                }, $line, $line);
+
                 $writer->addRow(Row::fromValues($line));
 
                 if ($using)
