@@ -34,14 +34,7 @@ class IteratorElement
     /**
      * field|section
      */
-    public ?string $type = null {
-        get {
-            return ($this->type ?? null) ? strtolower($this->type) : null;
-        }
-        set(?string $value) {
-            $this->type = strtolower($value);
-        }
-    }
+    public ?string $type = null;
 
     public bool $date = false;
 
@@ -80,6 +73,8 @@ class IteratorElement
         if (empty($this->type)) {
             $this->type = self::FIELD;
         }
+
+        $this->type = strtolower($this->type);
 
         throw_if(
             (
