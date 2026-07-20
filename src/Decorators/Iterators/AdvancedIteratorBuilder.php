@@ -108,65 +108,29 @@ trait AdvancedIteratorBuilder
      * single related model or a collection — so each of its instances
      * contributes its own row(s), merged with the constants of its parent(s).
      *
-     * @return array<int, array<string, mixed>> a list of rows, values keyed by
-     *  label — the caller looks them up against the labels collected by
-     *  getFields()/getExcelFields()
+     * Each completed row is emitted through $callback as an array keyed by
+     * label — the caller looks the values up against the labels collected by
+     * getFields()/getExcelFields().
+     *
+     * @param array<string, mixed> $inherited constants from parent section(s),
+     *  replicated onto every row this section produces
      */
-    function collectRows(IteratorElement &$section, callable $callback): void
+    function collectRows(IteratorElement &$section, callable $callback, array $inherited = []): void
     {
-        $base = [];
+        // Constants inherited from the parent section(s) are the starting point
+        // for this section's rows: they must be replicated onto every row it and
+        // its nested sections produce.
+        $base = $inherited;
+
+        // First collect this section's own constant fields, then process the
+        // nested sections. Doing this in two passes means a constant field keeps
+        // its column and value on every nested row regardless of its position
+        // relative to the nested section in the schema.
+        $nested = [];
 
         foreach ($section->fields as &$value) {
-            // $this->parsedSections[] = $value;
-
             if ($value->type === IteratorElement::SECTION) {
-                $root_elements = $this->getValueFromPath($value, $value->root);
-                $reflection = null;
-                if (is_object($root_elements)) {
-                    $reflection = new ReflectionClass($root_elements);
-                }
-
-                if (
-                    $reflection
-                    &&
-                    (
-                        $reflection->getParentClass()
-                        && (
-                            in_array($reflection->getParentClass()->name, config('data_extractor.model_classes'))
-                            || $reflection->getParentClass()->name === Model::class
-                        )
-                    )
-                ) {
-                    // Root resolves to a single related model: still exactly
-                    // one nested row (group), whatever fields it contains.
-                    $this->current_target = $root_elements;
-                    $this->collectRows($value, $callback);
-                    $this->current_target = $this->target;
-                } elseif (!empty($root_elements)) {
-                    // Root resolves to a collection: one nested row per item.
-                    if ($root_elements::class === "Illuminate\Database\Eloquent\Builder") {
-                        $take = 1000;
-                        $skip = 0;
-                        $res = $root_elements->skip($skip)->take($take)->get();
-                        while ($res->isNotEmpty()) {
-                            if ($skip) {
-                                $res = $root_elements->skip($skip)->take($take)->get();
-                            }
-                            foreach ($res as $target_element_model) {
-                                $this->current_target = $target_element_model;
-                                $this->collectRows($value, $callback);
-                            }
-                            $skip += $take;
-                        }
-                    } else {
-                        foreach ($root_elements as $target_element_model) {
-                            $this->current_target = $target_element_model;
-                            $this->collectRows($value, $callback);
-                        }
-                    }
-
-                    $this->current_target = $this->target;
-                }
+                $nested[] = &$value;
             } else {
                 $val = $this->parseElement($value);
                 $base[$value->label] = isset($base[$value->label])
@@ -174,8 +138,65 @@ trait AdvancedIteratorBuilder
                     : $val;
             }
         }
+        unset($value);
 
-        $callback($base);
-        return;
+        // A section without nested sections contributes exactly one flat row.
+        if (empty($nested)) {
+            $callback($base);
+            return;
+        }
+
+        // Each nested section is a repeatable relation: it produces its own
+        // row(s), each merged with the constants gathered above.
+        foreach ($nested as &$value) {
+            $root_elements = $this->getValueFromPath($value, $value->root);
+            $reflection = null;
+            if (is_object($root_elements)) {
+                $reflection = new ReflectionClass($root_elements);
+            }
+
+            if (
+                $reflection
+                &&
+                (
+                    $reflection->getParentClass()
+                    && (
+                        in_array($reflection->getParentClass()->name, config('data_extractor.model_classes'))
+                        || $reflection->getParentClass()->name === Model::class
+                    )
+                )
+            ) {
+                // Root resolves to a single related model: still exactly
+                // one nested row (group), whatever fields it contains.
+                $this->current_target = $root_elements;
+                $this->collectRows($value, $callback, $base);
+                $this->current_target = $this->target;
+            } elseif (!empty($root_elements)) {
+                // Root resolves to a collection: one nested row per item.
+                if ($root_elements::class === "Illuminate\Database\Eloquent\Builder") {
+                    $take = 1000;
+                    $skip = 0;
+                    $res = $root_elements->skip($skip)->take($take)->get();
+                    while ($res->isNotEmpty()) {
+                        if ($skip) {
+                            $res = $root_elements->skip($skip)->take($take)->get();
+                        }
+                        foreach ($res as $target_element_model) {
+                            $this->current_target = $target_element_model;
+                            $this->collectRows($value, $callback, $base);
+                        }
+                        $skip += $take;
+                    }
+                } else {
+                    foreach ($root_elements as $target_element_model) {
+                        $this->current_target = $target_element_model;
+                        $this->collectRows($value, $callback, $base);
+                    }
+                }
+
+                $this->current_target = $this->target;
+            }
+        }
+        unset($value);
     }
 }
