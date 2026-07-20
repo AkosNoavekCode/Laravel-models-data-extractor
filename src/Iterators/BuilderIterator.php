@@ -306,7 +306,7 @@ class BuilderIterator implements BuilderIteratorInterface
                 if (str_contains($el[0], '.'))
                     $rows = $this->getPartValue(explode('.', $el[0]), $this->current_target);
                 else
-                    $rows = $this->current_target->{$el[0]};
+                    $rows = safe_value($this->current_target, $el[0]);
             }
 
             if (!empty($rows)) {
