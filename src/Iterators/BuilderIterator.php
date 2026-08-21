@@ -211,7 +211,7 @@ class BuilderIterator implements BuilderIteratorInterface
         $use_inner = false;
         if (str_contains($key, ".*.")) {
             $el = explode(".*.", $key);
-            $str = $this->empty_state_placeholder ?? "";
+            $str = "";
 
             if (count($el) > 2) {
                 $use_inner = true;
@@ -330,9 +330,6 @@ class BuilderIterator implements BuilderIteratorInterface
                     }
 
                     if ($v && trim($v)) {
-                        // We remove the empty value separator
-                        $str = substr_replace($str, '', 0, 1);
-
                         if ($should_add_separator) {
                             $str .= $end . trim($v);
                         } else {
@@ -342,7 +339,7 @@ class BuilderIterator implements BuilderIteratorInterface
                         $should_add_separator = true;
                     } else if (str_contains($key, ".*.")) {
                         $should_add_separator = false;
-                        $str .= $this->separator;
+                        $str .= $this->empty_state_placeholder . $this->separator;
                     }
                 }
             }
