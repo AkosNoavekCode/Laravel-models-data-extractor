@@ -12,9 +12,14 @@ use OpenSpout\Writer\XLSX\Writer;
 
 trait BuilderToExcel
 {
-    function toExcel(SectionFactory $factory, ?string $sezione = null, ?string $title = null, ?callable $using = null)
-    {
-        $iterator = new BuilderIterator(target: $this->target, factory: $factory, separator: ";");
+    function toExcel(
+        SectionFactory $factory,
+        ?string $sezione = null,
+        ?string $title = null,
+        ?callable $using = null,
+        ?string $empty_state_placeholder = ""
+    ) {
+        $iterator = new BuilderIterator(target: $this->target, factory: $factory, separator: ";", empty_state_placeholder: $empty_state_placeholder);
 
         $labels = $this->getExcelFields($factory);
 

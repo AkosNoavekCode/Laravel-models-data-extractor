@@ -31,6 +31,7 @@ class BuilderIterator implements BuilderIteratorInterface
         private SectionFactory $factory,
         private ?string $separator = ";",
         private ?string $inner_separator = "|",
+        private ?string $empty_state_placeholder = ""
     ) {
         $this->current_target = $target;
     }
@@ -210,7 +211,7 @@ class BuilderIterator implements BuilderIteratorInterface
         $use_inner = false;
         if (str_contains($key, ".*.")) {
             $el = explode(".*.", $key);
-            $str = "";
+            $str = $this->empty_state_placeholder ?? "";
 
             if (count($el) > 2) {
                 $use_inner = true;
@@ -329,6 +330,9 @@ class BuilderIterator implements BuilderIteratorInterface
                     }
 
                     if ($v && trim($v)) {
+                        // We remove the empty value separator
+                        $str = substr_replace($str, '', 0, 1);
+
                         if ($should_add_separator) {
                             $str .= $end . trim($v);
                         } else {

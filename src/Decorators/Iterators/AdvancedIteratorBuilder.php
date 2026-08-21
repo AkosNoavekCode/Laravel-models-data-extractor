@@ -65,7 +65,6 @@ trait AdvancedIteratorBuilder
                         $this->parseSectionUsing($value, $callback, $standard);
                         $this->current_target = $this->target;
                     } else if (!empty($root_elements)) {
-
                         /**
                          * Case in wich we have multiple root elements
                          * This is triggered with array and plain object
