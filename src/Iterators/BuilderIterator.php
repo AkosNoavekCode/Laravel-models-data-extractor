@@ -338,6 +338,10 @@ class BuilderIterator implements BuilderIteratorInterface
 
                         $should_add_separator = true;
                     } else if (str_contains($key, ".*.")) {
+                        // In case we have a placeholder to set
+                        if ($should_add_separator && !empty($this->empty_state_placeholder))
+                            $str .= $this->separator;
+
                         $should_add_separator = false;
                         $str .= $this->empty_state_placeholder . $this->separator;
                     }
