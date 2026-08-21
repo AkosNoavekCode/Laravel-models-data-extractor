@@ -90,12 +90,12 @@ class DataExtractor
     return $data;
   }
 
-  function toXlsx(?string $filename = null, mixed $data = null, ?string $section = null, ?callable $using = null)
+  function toXlsx(?string $filename = null, mixed $data = null, ?string $section = null, ?callable $using = null, ?string $empty_state_placeholder = "")
   {
     $this->prepare($filename, $data, $section);
 
     $this->factory->section_name = $section;
-    $data = $this->builder->toExcel(factory: $this->factory, using: $using);
+    $data = $this->builder->toExcel(factory: $this->factory, using: $using, empty_state_placeholder: $empty_state_placeholder);
 
     if ($this->builder->should_delete_template)
       unlink($this->builder->filename);
