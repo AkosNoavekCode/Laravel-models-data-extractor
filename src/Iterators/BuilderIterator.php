@@ -346,6 +346,15 @@ class BuilderIterator implements BuilderIteratorInterface
                         $str .= $this->empty_state_placeholder . $this->separator;
                     }
                 }
+
+                /**
+                 * We remove the last separator from the output string when the last value set is
+                 * the empty state placeholder, should find a better way to not set it but might be expensive
+                 */
+                if (
+                    ! $should_add_separator
+                )
+                    $str = mb_substr($str, 0, strlen($str) - 1);
             }
 
             $val = $str;
