@@ -253,9 +253,19 @@ class BuilderIterator implements BuilderIteratorInterface
                                     }
                                 }
                                 if (!empty($records)) {
-                                    $records->each(function ($record) use (&$models, $index) {
+                                    $inner_i = 0;
+                                    $records->each(function ($record) use (&$models, $index, &$inner_i) {
+                                        if ($inner_i === 0)
+                                            $record->use_inner = false;
+                                        else
+                                            $record->use_inner = true;
+
                                         $models[$index][] = $record;
+
+                                        $inner_i++;
                                     });
+
+                                    unset($inner_i);
 
                                     if ($should_push) {
                                         $models[$index][] = [];
@@ -287,9 +297,18 @@ class BuilderIterator implements BuilderIteratorInterface
                                 }
 
                                 if (!empty($records)) {
-                                    $records->each(function ($record) use (&$models, $index) {
+                                    $inner_i = 0;
+                                    $records->each(function ($record) use (&$models, $index, &$inner_i) {
+                                        if ($inner_i === 0)
+                                            $record->use_inner = false;
+                                        else
+                                            $record->use_inner = true;
+
                                         $models[$index][] = $record;
+
+                                        $inner_i++;
                                     });
+                                    unset($inner_i);
 
                                     if ($should_push) {
                                         $models[$index][] = [];
@@ -310,10 +329,16 @@ class BuilderIterator implements BuilderIteratorInterface
                     $rows = safe_value($this->current_target, $el[0]);
             }
 
+            /**
+             * Parse the extracted rows
+             * todo: separate the extraction and parsing
+             */
             if (!empty($rows)) {
                 $should_add_separator = false;
                 $end = ($use_inner) ? $this->inner_separator : $this->separator;
                 foreach ($rows as $i => $val) {
+                    if (!is_array($val))
+                        $end = ($val->use_inner) ? $this->inner_separator : $this->separator;
                     if (str_contains($el[count($el) - 1], '.'))
                         $row_value = $this->getPartValue(explode('.', $el[count($el) - 1]), $val);
                     else
