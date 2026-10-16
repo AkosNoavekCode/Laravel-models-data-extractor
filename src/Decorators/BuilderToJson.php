@@ -61,20 +61,22 @@ trait BuilderToJson
       if ($field->type !== IteratorElement::SECTION) {
         if ($raw) {
           $section[$data->label][$field->label] = $field->data;
+        } else {
+          $section['data'][] = [
+            "label" => $field->label,
+            "value" => $field->data,
+            "view" => $field->view,
+            "extra_attributes" => $field->extra_attributes,
+            "element_key" => $field->element_key,
+            "parent_key" => $field->parent_key,
+          ];
         }
-        $section['data'][] = [
-          "label" => $field->label,
-          "value" => $field->data,
-          "view" => $field->view,
-          "extra_attributes" => $field->extra_attributes,
-          "element_key" => $field->element_key,
-          "parent_key" => $field->parent_key,
-        ];
       } else {
         if ($raw) {
           $section[$data->label][$field->label] = $this->parseSection($field, $raw);
+        } else {
+          $section['data'][] = $this->parseSection($field, $raw);
         }
-        $section['data'][] = $this->parseSection($field, $raw);
       }
     }
     return $section;
