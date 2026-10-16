@@ -64,16 +64,18 @@ class DataExtractor
     return $data;
   }
 
-  function toJson(?string $filename = null, mixed $data = null, ?string $section = null)
+  function toJson(?string $filename = null, mixed $data = null, ?string $section = null, ?bool $raw = false)
   {
     if (! $this->extracted) {
       $this->extract($filename, $data, $section, false);
     }
 
     $this->factory->section_name = $section;
-    $data = $this->builder->toJson($this->factory, $section);
+    $data = $this->builder->toJson($this->factory, $section, $raw);
+
     if ($this->builder->should_delete_template)
       unlink($this->builder->filename);
+
     return $data;
   }
 
