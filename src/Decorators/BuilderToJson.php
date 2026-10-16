@@ -46,15 +46,16 @@ trait BuilderToJson
 
   function parseSection(IteratorElement $data, bool $raw): ?array
   {
-    $section = [
-      "label" => $data->label,
-      "view" => $data->view,
-      "extra_attributes" => $data->extra_attributes,
-      "element_key" => $data->element_key,
-      "parent_key" => $data->parent_key,
-    ];
     if ($raw) {
       $section[$data->label] = [];
+    } else {
+      $section = [
+        "label" => $data->label,
+        "view" => $data->view,
+        "extra_attributes" => $data->extra_attributes,
+        "element_key" => $data->element_key,
+        "parent_key" => $data->parent_key,
+      ];
     }
 
     foreach ($data->fields as $field) {
