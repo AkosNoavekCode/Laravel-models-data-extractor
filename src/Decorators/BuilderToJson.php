@@ -74,7 +74,7 @@ trait BuilderToJson
         }
       } else {
         if ($raw) {
-          array_push($section[$data->label], $this->parseSection($field, $raw));
+          $section[$data->label][$field->label] = $this->parseSection($field, $raw)[$field->label] ?? null;
         } else {
           $section['data'][] = $this->parseSection($field, $raw);
         }
